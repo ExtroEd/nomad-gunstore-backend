@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "nomad-gunstore-backend"
+version = "0.1.0"
+description = "Backend project for the \"Palmetto State Armory\" weapons store website, developed as part of a thesis at Nomad College."
+authors = ["ExtroEd"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "backend"}]
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+django = "^5.1.6"
+djangorestframework = "^3.15.2"
+psycopg2-binary = "^2.9.10"
+celery = "^5.4.0"
+redis = "^5.2.1"
+drf-spectacular = "^0.28.0"
+gunicorn = "^23.0.0"
+openpyxl = "^3.1.5"
+ruff = "^0.9.9"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
