@@ -19,6 +19,8 @@ gunicorn = "^23.0.0"
 openpyxl = "^3.1.5"
 ruff = "^0.9.9"
 drf-spectacular-sidecar = "^2025.3.1"
+djangorestframework-simplejwt = "^5.5.0"
+psycopg2 = "^2.9.10"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
