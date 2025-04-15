@@ -1,14 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Nomad Gunstore</title>
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
-  <h1>Hello, Gunstore!</h1>
-  <button onclick="alertHello()">Click me</button>
+    {% load static %}
+    <head>
+      <meta charset="UTF-8" />
+      <title>Nomad Tactical</title>
+      <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+      <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    </head>
+    <body>
+      <header class="header">
+        <div class="header-inner container">
 
-  <script src="{% static 'js/app.js' %}"></script>
-</body>
+          <!-- Левая часть -->
+          <div class="header-left">
+            <a href="/" class="logo-link">
+              <img src="{% static 'img/logo.png' %}" alt="Logo" class="logo">
+            </a>
+
+            <form class="search-bar">
+              <input type="text" class="search-input" placeholder="Search Nomad Tactical...">
+              <button type="submit" class="search-button">
+                <img src="{% static 'img/search-icon.svg' %}" alt="Search" class="search-icon">
+              </button>
+            </form>
+          </div>
+
+          <!-- Правая часть -->
+          <div class="header-right">
+            <button class="header-button">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24" class="svg-icon">
+                <g transform="translate(0,512) scale(0.1,-0.1)" fill="currentColor" stroke="none">
+                  <path d="M2330 5110 c-199 -18 -464 -78 -649 -146 -237 -88 -529 -254 -727
+                  -414 -101 -82 -302 -283 -384 -384 -160 -198 -326 -490 -414 -727 -124 -336
+                  -178 -742 -146 -1097 19 -216 76 -470 146 -661 88 -237 254 -529 414 -727 82
+                  -101 283 -302 384 -384 198 -160 490 -326 727 -414 336 -124 742 -178 1097
+                  -146 216 19 470 76 661 146 237 88 529 254 727 414 101 82 302 283 384 384
+                  160 198 326 490 414 727 70 191 127 445 146 661 32 355 -22 761 -146 1097 -88
+                  237 -254 529 -414 727 -82 101 -283 302 -384 384 -198 160 -490 326 -727 414
+                  -337 124 -747 178 -1109 146z m455 -790 c129 -40 222 -96 315 -190 97 -97 149
+                  -180 186 -295 119 -374 -32 -759 -366 -931 -117 -61 -198 -79 -360 -79 -162 0
+                  -243 18 -360 79 -226 116 -369 327 -401 589 -20 162 17 348 98 487 57 98 190
+                  227 288 277 150 76 228 93 405 88 93 -2 143 -9 195 -25z m-10 -2005 c703 -82
+                  1270 -393 1314 -720 l8 -58 -61 -81 c-133 -178 -362 -379 -563 -494 -565 -324
+                  -1261 -324 -1826 0 -201 115 -430 316 -563 494 l-61 81 8 58 c33 247 362 488
+                  854 628 332 95 617 124 890 92z"/>
+                </g>
+              </svg>
+              <span>Log In</span>
+            </button>
+            <div class="divider"></div>
+            <button class="header-button">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   width="24" height="24" viewBox="0 0 512 512"
+                   class="svg-icon">
+                <g transform="translate(0,512) scale(0.1,-0.1)" fill="currentColor" stroke="none">
+                  <path d="M715 5105 c-125 -23 -260 -80 -355 -150 -72 -53 -193 -185 -234 -255
+                  -89 -151 -120 -269 -120 -450 0 -148 16 -230 73 -354 91 -200 277 -377 481
+                  -455 138 -54 212 -61 621 -61 209 0 379 4 393 10 50 19 74 93 46 144 -7 13
+                  -39 39 -71 57 -32 19 -59 39 -59 45 0 6 10 19 21 30 68 61 155 217 196 351 23
+                  78 26 104 26 233 0 129 -3 155 -26 233 -89 290 -296 504 -577 595 -131 43
+                  -280 52 -415 27z m287 -149 c389 -75 648 -452 574 -838 -28 -146 -87 -257
+                  -202 -379 -59 -63 -64 -72 -64 -112 0 -30 7 -53 21 -71 l20 -26 -269 0 c-300
+                  0 -373 9 -491 58 -133 56 -263 170 -340 296 -18 31 -47 95 -64 143 -28 81 -31
+                  99 -31 218 -1 109 3 142 22 205 40 126 88 206 182 301 178 180 401 251 642
+                  205z"/>
+                  <path d="M517 4302 c-23 -25 -22 -85 1 -105 25 -23 85 -22 105 1 23 25 22 85
+                  -1 105 -25 23 -85 22 -105 -1z"/>
+                  <path d="M817 4302 c-23 -25 -22 -85 1 -105 25 -23 85 -22 105 1 23 25 22 85
+                  -1 105 -25 23 -85 22 -105 -1z"/>
+                  <path d="M1117 4302 c-23 -25 -22 -85 1 -105 25 -23 85 -22 105 1 23 25 22 85
+                  -1 105 -25 23 -85 22 -105 -1z"/>
+                  <path d="M2915 5114 c-462 -66 -823 -358 -978 -791 -50 -137 -59 -216 -67
+                  -553 -8 -345 -12 -374 -75 -505 -19 -39 -67 -116 -108 -172 -109 -150 -147
+                  -252 -147 -398 1 -247 147 -471 368 -561 65 -26 83 -13 -173 -124 -104 -45
+                  -214 -96 -244 -112 -126 -72 -235 -190 -297 -323 -68 -147 -67 -137 -71 -707
+                  l-4 -518 25 -25 c31 -30 64 -32 100 -4 l26 20 0 482 c0 543 3 567 70 703 47
+                  97 140 195 228 242 66 35 539 242 553 242 6 0 8 -92 7 -223 l-3 -222 -150 -5
+                  c-162 -5 -186 -12 -236 -67 -43 -46 -59 -87 -59 -154 0 -52 98 -1015 116
+                  -1147 l6 -42 -876 0 -877 0 -24 -25 c-32 -31 -32 -69 0 -100 l24 -25 2511 0
+                  2511 0 24 25 c32 31 32 69 0 100 -19 20 -34 25 -75 25 l-50 0 0 589 c0 635 -3
+                  675 -53 801 -57 141 -173 280 -293 352 -48 30 -339 161 -463 209 -22 9 -19 12
+                  45 43 142 68 247 182 305 331 27 67 33 98 37 185 2 61 -1 129 -7 161 -17 79
+                  -68 181 -136 269 -32 41 -75 111 -96 156 -68 143 -71 163 -80 529 -4 182 -12
+                  351 -18 377 -56 256 -153 440 -320 611 -168 172 -365 281 -603 333 -70 15
+                  -311 27 -373 18z m300 -159 c50 -8 122 -25 162 -39 79 -27 233 -104 233 -116
+                  0 -13 -106 -158 -179 -244 -305 -364 -843 -626 -1285 -626 -146 0 -133 -14
+                  -116 130 72 584 608 989 1185 895z m685 -435 c96 -141 162 -330 176 -503 l7
+                  -85 -47 -7 c-100 -15 -293 17 -409 69 -28 12 -81 42 -117 65 -70 46 -100 48
+                  -132 9 -28 -32 -23 -75 12 -107 45 -41 182 -111 279 -142 l86 -27 3 -199 2
+                  -198 -32 -63 c-17 -35 -54 -87 -82 -116 -51 -53 -151 -126 -172 -126 -6 0 -23
+                  15 -38 34 -47 62 -93 76 -255 76 -136 0 -146 -1 -192 -26 -151 -83 -152 -293
+                  -2 -381 47 -27 52 -28 193 -28 130 0 149 2 186 22 46 25 84 65 103 109 7 19
+                  32 40 71 62 33 18 89 55 125 82 37 28 68 50 71 50 12 0 -10 -69 -43 -138 -65
+                  -138 -204 -256 -358 -305 -64 -20 -90 -22 -295 -22 -209 0 -230 2 -290 24
+                  -200 71 -344 224 -395 418 -12 45 -15 128 -15 390 l0 333 23 4 c150 31 199 44
+                  301 77 397 130 763 403 1007 749 l64 91 61 -64 c34 -36 81 -93 104 -127z
+                  m-1708 -1102 c4 -348 5 -366 27 -428 56 -160 171 -313 294 -390 67 -42 70 -58
+                  28 -145 -36 -78 -101 -136 -199 -181 -77 -35 -78 -36 -198 -32 -115 3 -123 4
+                  -195 40 -173 86 -267 244 -257 436 5 107 34 177 119 289 76 100 141 226 175
+                  339 23 77 27 111 32 262 l4 172 83 0 84 0 3 -362z m1891 185 c4 -155 8 -190
+                  31 -268 38 -125 84 -218 162 -321 37 -49 78 -114 93 -144 23 -50 26 -67 26
+                  -175 0 -111 -2 -125 -28 -180 -87 -186 -228 -275 -434 -275 -87 0 -102 3 -180
+                  37 -128 55 -213 150 -229 255 -5 31 -2 35 46 63 80 47 198 176 248 272 78 150
+                  84 191 89 570 l5 332 72 4 c39 1 76 4 82 5 8 1 13 -52 17 -175z m-769 -569
+                  c38 -37 27 -96 -20 -114 -35 -14 -198 -12 -227 1 -22 10 -47 46 -47 68 0 5 9
+                  20 21 35 20 25 23 26 139 26 94 0 122 -3 134 -16z m-479 -555 c94 -14 370 -10
+                  460 6 44 8 81 15 83 15 1 0 2 -8 2 -18 0 -10 16 -50 35 -91 53 -111 128 -180
+                  262 -242 60 -27 115 -53 123 -58 11 -6 15 -28 15 -91 l0 -84 -110 -28 c-441
+                  -111 -915 -113 -1342 -6 l-83 20 0 94 c0 64 4 94 11 94 7 0 62 24 123 54 86
+                  41 125 68 169 111 54 55 127 177 127 215 0 25 11 32 40 25 14 -4 52 -11 85
+                  -16z m1405 -574 c113 -48 235 -103 272 -122 123 -64 228 -189 280 -333 l23
+                  -65 3 -617 3 -618 -226 0 c-173 0 -225 3 -225 13 0 6 27 268 61 582 33 314 59
+                  593 57 622 -5 64 -41 122 -100 160 -41 28 -43 28 -230 31 l-188 3 0 230 0 229
+                  33 -13 c17 -8 124 -53 237 -102z m-422 -242 l-3 -98 -767 -3 -768 -2 0 94 0
+                  93 78 -19 c256 -61 572 -88 840 -69 180 12 402 46 527 80 103 28 96 34 93 -76z
+                  m502 -273 c11 -11 20 -33 20 -49 0 -15 -27 -282 -60 -592 -33 -310 -60 -572
+                  -60 -581 0 -17 -61 -18 -1135 -18 -624 0 -1135 2 -1135 4 0 2 -27 258 -60 568
+                  -33 309 -60 583 -60 607 0 27 6 51 17 63 15 17 67 18 1235 18 1205 0 1218 0
+                  1238 -20z"/>
+                  <path d="M3008 1057 c-159 -45 -246 -213 -191 -373 23 -68 102 -145 172 -169
+                  106 -35 235 -4 303 74 99 113 101 270 3 379 -75 83 -185 117 -287 89z m148
+                  -162 c56 -36 77 -110 49 -169 -64 -135 -269 -77 -252 71 11 98 122 151 203 98z"/>
+                </g>
+              </svg>
+              <span>Help Center</span>
+            </button>
+            <div class="divider"></div>
+            <button class="header-button">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   width="24" height="24" viewBox="0 0 512 512"
+                   class="svg-icon">
+                <g transform="translate(0,512) scale(0.1,-0.1)" fill="currentColor" stroke="none">
+                  <path d="M162 4900 c-57 -13 -108 -55 -136 -111 -44 -89 -31 -175 37 -243 61
+                  -60 91 -66 342 -66 237 0 267 -6 304 -59 10 -14 183 -521 385 -1126 427 -1284
+                  396 -1146 325 -1427 -64 -254 -56 -378 36 -533 70 -118 219 -228 347 -254 37
+                  -8 459 -10 1404 -9 l1351 3 39 27 c21 15 50 44 64 65 21 31 25 48 25 113 0 67
+                  -3 81 -27 116 -15 21 -44 50 -65 64 l-37 25 -1340 5 c-1458 5 -1365 1 -1400
+                  61 -22 37 -20 63 10 182 29 115 41 140 87 167 31 19 60 20 1206 20 900 0 1183
+                  3 1215 12 23 7 59 30 82 54 41 40 45 53 338 930 163 489 296 902 296 918 0 80
+                  -54 165 -124 197 -39 18 -110 19 -1786 19 -1153 0 -1757 4 -1782 10 -71 20
+                  -87 51 -204 405 -97 291 -113 332 -147 371 -62 71 -84 74 -476 73 -185 -1
+                  -351 -5 -369 -9z"/>
+                  <path d="M1570 830 c-165 -61 -273 -200 -287 -371 -21 -254 202 -477 456 -456
+                  176 15 322 132 375 302 28 88 19 211 -21 297 -44 93 -109 160 -201 205 -68 34
+                  -83 38 -171 40 -77 3 -107 -1 -151 -17z"/>
+                  <path d="M4130 830 c-165 -61 -273 -200 -287 -371 -21 -254 202 -477 456 -456
+                  176 15 322 132 375 302 28 88 19 211 -21 297 -44 93 -109 160 -201 205 -68 34
+                  -83 38 -171 40 -77 3 -107 -1 -151 -17z"/>
+                </g>
+              </svg>
+              <span>View Cart</span>
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      <main>
+        <h1>Hello, Gunstore!</h1>
+        <button onclick="alertHello()">Click me</button>
+      </main>
+
+      <footer style="text-align: center; font-size: 12px; margin-top: 100px; color: #666;">
+        <p>
+          Icons by
+          <a href="https://www.flaticon.com/free-icons/search" title="search icons" target="_blank">Royyan Wijaya</a>,
+          <a href="https://www.flaticon.com/free-icons/account" title="account icons" target="_blank">Google</a>,
+          <a href="https://www.flaticon.com/free-icons/customer-service" title="customer service icons" target="_blank">Freepik</a>,
+          <a href="https://www.flaticon.com/free-icons/retail" title="retail icons" target="_blank">Frey Wazza</a>
+          from <a href="https://www.flaticon.com/" target="_blank">Flaticon</a>
+        </p>
+      </footer>
+
+      <script src="{% static 'js/app.js' %}"></script>
+
+      <div id="age-verification-overlay">
+        <div class="age-verification-popup">
+          <img src="{% static 'img/logo.png' %}" alt="Logo" class="popup-logo">
+          <p class="popup-subtitle">Welcome to Nomad Tactical, our site is intended for individuals of at least 18 years of age.</p>
+          <p class="popup-title">Are you at least 18 years old?</p>
+
+          <div class="popup-buttons">
+            <button id="yes-button">Yes</button>
+            <button id="no-button">No</button>
+          </div>
+
+          <label class="popup-checkbox">
+            <input type="checkbox" id="remember-check">
+            <span>I verify that this device is not shared.<br>Remember me temporarily while I shop.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Модальное окно логина -->
+      <div id="login-modal" class="modal-overlay">
+        <div class="modal-content">
+          <button class="modal-close" id="close-login-modal">&times;</button>
+          <img src="{% static 'img/logo.png' %}" alt="Logo" class="modal-logo">
+          <h2 class="modal-title">Log In</h2>
+
+          <label>Email*</label>
+          <input type="email" placeholder="Enter Your Email" class="modal-input">
+
+          <label>Password</label>
+          <input type="password" placeholder="Enter Your Password" class="modal-input">
+
+          <div class="recaptcha-box">
+            <input type="checkbox" id="recaptcha"> <label for="recaptcha">I'm not a robot</label>
+          </div>
+
+          <button class="modal-login-btn">Login</button>
+
+          <div class="modal-links">
+            <a href="#" class="modal-link">Forgot Password?</a>
+            <a href="#" class="modal-link">Create Account</a>
+          </div>
+
+          <!-- Встроенный футер -->
+          <footer class="modal-footer">
+            © 2025 Nomad Tactical. All rights reserved.
+          </footer>
+        </div>
+      </div>
+    </body>
 </html>

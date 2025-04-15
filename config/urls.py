@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/auth/', include('apps.authentication.urls')),
     path('api/products/', include('apps.products.urls')),
     path('api/orders/', include('apps.orders.urls')),
+
+    path('', include('apps.frontend.urls')),
 ]
