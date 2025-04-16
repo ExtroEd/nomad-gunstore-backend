@@ -5,6 +5,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -22,9 +24,9 @@ urlpatterns = [
 
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
-    path('api/products/', include('apps.products.urls')),
+    path('api/', include('apps.products.urls')),
     path('api/orders/', include('apps.orders.urls')),
 
     # Frontend routes
     path('', include('apps.frontend.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
