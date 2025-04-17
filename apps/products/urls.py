@@ -1,14 +1,13 @@
-from django.urls import path
-from .views import (ProductListCreateView,
-                    ProductRetrieveUpdateDestroyView,
-                    CategoryListCreateView)
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import CategoryViewSet, ProductViewSet
+
+
+router = DefaultRouter()
+router.register(r'categories', CategoryViewSet)
+router.register(r'products', ProductViewSet)
 
 
 urlpatterns = [
-    path('products/', ProductListCreateView.as_view(),
-         name='product-list-create'),
-    path('products/<int:pk>/', ProductRetrieveUpdateDestroyView.as_view(),
-         name='product-detail'),
-    path('categories/', CategoryListCreateView.as_view(),
-         name='category-list-create'),
+    path('', include(router.urls)),
 ]
