@@ -1,4 +1,5 @@
 from django.db import models
+from ckeditor.fields import RichTextField
 
 
 class Category(models.Model):
@@ -25,9 +26,6 @@ class Product(models.Model):
     category = models.ForeignKey(
         'Category',
         on_delete=models.CASCADE
-    )
-    description = models.TextField(
-        blank=True
     )
     price = models.DecimalField(
         max_digits=10,
@@ -59,6 +57,8 @@ class Product(models.Model):
     attributes = models.JSONField(
         default=dict
     )
+    details = RichTextField(blank=True)
+    features = RichTextField(blank=True)
 
     def __str__(self):
         return self.name

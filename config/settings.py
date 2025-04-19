@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apps.users',
     "drf_spectacular",
     "django_filters",
+    'ckeditor',
 ]
 
 MIDDLEWARE = [
@@ -197,4 +198,12 @@ SIMPLE_JWT = {
 
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
+}
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+    },
 }
