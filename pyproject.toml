@@ -5,7 +5,7 @@ description = "Backend project for the \"Palmetto State Armory\" weapons store w
 authors = ["ExtroEd"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "backend"}]
+packages = [{include = "apps"}]
 
 [tool.poetry.dependencies]
 python = ">=3.12"
@@ -26,7 +26,7 @@ drf-yasg = "^1.21.10"
 psycopg = "^3.2.6"
 pillow = "^11.2.1"
 django-filter = "^25.1"
-django-ckeditor = "^6.7.2"
+django-ckeditor-5 = "^0.2.17"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
