@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.products',
     'apps.users',
+    'apps.cart',
     "drf_spectacular",
     "django_filters",
     'django_ckeditor_5',
@@ -171,8 +172,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Nomad Gunstore API',
-    'DESCRIPTION': 'API для управления оружейным магазином.',
+    'TITLE': 'Nomad Gun Store API',
+    'DESCRIPTION': 'API for managing a gun shop.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,

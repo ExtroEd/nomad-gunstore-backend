@@ -35,6 +35,7 @@ class Product(models.Model):
     discount_price = models.IntegerField(
         validators=[MinValueValidator(0)], blank=True, null=True
     )
+    shipping_price = models.PositiveIntegerField()
     sku = models.CharField(
         max_length=19, unique=True, editable=False, blank=True, null=True
     )
@@ -66,10 +67,12 @@ class Product(models.Model):
         default=dict
     )
     details = CKEditor5Field(
-        'Details', config_name='default', default="Description is missing"
+        'Details', config_name='default',
+        default="Description is missing"
     )
     features = CKEditor5Field(
-        'Features', config_name='default', default="Description is missing"
+        'Features', config_name='default',
+        default="Description is missing"
     )
 
     def save(self, *args, **kwargs):
@@ -81,9 +84,12 @@ class Product(models.Model):
             self.sku = f"{now}-{rand}"
 
         if not self.mpn:
-            self.mpn = ''.join(random.choices(string.ascii_uppercase + string
-                                              .digits + '-', k=random
-                                              .randint(6, 12)))
+            self.mpn = ''.join(
+                random.choices(
+                    string.ascii_uppercase + string.digits + '-',
+                    k=random.randint(6, 12)
+                )
+            )
 
         if not self.upc:
             self.upc = ''.join(random.choices(string.digits, k=12))

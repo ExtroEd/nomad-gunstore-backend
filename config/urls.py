@@ -26,7 +26,8 @@ urlpatterns = [
     # API endpoints
     path('api/auth/', include('apps.users.urls')),
     path('api/', include('apps.products.urls')),
-    path('api/orders/', include('apps.orders.urls')),
+    path('api/', include('apps.orders.urls')),
+    path('api/', include('apps.cart.urls')),
 
     # Frontend routes
     path('', include('apps.frontend.urls')),

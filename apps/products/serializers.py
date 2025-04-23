@@ -14,13 +14,17 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only=True
     )
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(), source='category', write_only=True
+        queryset=Category.objects.all(),  # type: ignore[attr-defined]
+        source='category', write_only=True
     )
     price = serializers.IntegerField(
-        default=lambda: random.randint(1, 1_000_000)
+        default=lambda: random.randint(100, 1_000_000)
     )
     discount_price = serializers.IntegerField(
         required=False, allow_null=True
+    )
+    shipping_price = serializers.IntegerField(
+        default=lambda: random.randint(0, 2000)
     )
     image = serializers.ImageField(
         required=False, default='img/Sample.jpg'
