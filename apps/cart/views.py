@@ -50,6 +50,17 @@ class CartViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
 
     @extend_schema(
+        summary="Частичное обновление корзины",
+        description="Позволяет изменить отдельные поля корзины без "
+                    "необходимости передавать всё. Например, можно обновить "
+                    "только защиту доставки или сумму пожертвования.",
+        request=CartSerializer,
+        responses=CartSerializer,
+    )
+    def partial_update(self, request, *args, **kwargs):
+        return super().partial_update(request, *args, **kwargs)
+
+    @extend_schema(
         summary="Удаление корзины",
         description="Удаляет выбранную корзину по ID.",
     )
