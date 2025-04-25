@@ -46,8 +46,7 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = [
-            'id', 'user', 'session_key', 'created_at',
-            'shipping_protection', 'items',
+            'id', 'user', 'session_key', 'created_at', 'items',
             'subtotal_price', 'shipping_fee', 'shipping_protection_fee',
             'final_price'
         ]

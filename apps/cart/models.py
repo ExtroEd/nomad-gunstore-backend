@@ -10,11 +10,20 @@ class Cart(models.Model):
     session_key = models.CharField(
         max_length=40, null=True, blank=True
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
     shipping_protection = models.BooleanField(
         default=False
     )
-    created_at = models.DateTimeField(
-        auto_now_add=True
+    donation_enabled = models.BooleanField(
+        default=False
+    )
+    donation_amount = models.PositiveIntegerField(
+        default=0
     )
 
     def __str__(self):
@@ -36,6 +45,10 @@ class Cart(models.Model):
     def shipping_protection_fee(self) -> int:
         return int(self.subtotal_price * 0.03) \
             if self.shipping_protection else 0
+
+    @property
+    def donation_fee(self) -> int:
+        return self.donation_amount if self.donation_enabled else 0
 
     @property
     def final_price(self) -> int:

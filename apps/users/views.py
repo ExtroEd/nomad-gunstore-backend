@@ -1,10 +1,11 @@
-from rest_framework import generics
+from drf_spectacular.utils import extend_schema
+from rest_framework import generics, permissions
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
-from drf_spectacular.utils import extend_schema
 
-from .models import CustomUser
+from apps.users.models import CustomUser
+from apps.users.serializers import CustomUserSerializer
 from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
 
 
@@ -41,3 +42,14 @@ class LoginView(TokenObtainPairView):
 )
 class CustomTokenRefreshView(TokenRefreshView):
     permission_classes = [AllowAny]
+
+
+@extend_schema(
+    tags=["Authentication"],
+    description="Получить список всех пользователей",
+    responses={200: CustomUserSerializer(many=True)},
+)
+class UserListView(generics.ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [permissions.IsAdminUser]

@@ -35,7 +35,9 @@ class Product(models.Model):
     discount_price = models.IntegerField(
         validators=[MinValueValidator(0)], blank=True, null=True
     )
-    shipping_price = models.PositiveIntegerField()
+    shipping_price = models.PositiveIntegerField(
+        default=2000
+    )
     sku = models.CharField(
         max_length=19, unique=True, editable=False, blank=True, null=True
     )
