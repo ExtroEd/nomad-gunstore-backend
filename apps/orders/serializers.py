@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
+from ..cart.models import Cart
+from drf_spectacular.utils import extend_schema_field
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -10,16 +12,29 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ["product_name", "quantity", "total_price"]
 
-    def get_total_price(self, obj):
+    def get_total_price(self, obj) -> int:
         return obj.total_price
+
+
+class OrderCartSerializer(serializers.ModelSerializer):
+    # Пример простого сериализатора для корзины, если необходимо передавать
+    # корзину в заказе. Вы можете расширить его под вашу логику
+    class Meta:
+        model = Cart
+        fields = ["id", "session_key", "created_at", "updated_at"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    subtotal = serializers.ReadOnlyField()
-    shipping_fee = serializers.ReadOnlyField()
-    protection_fee = serializers.ReadOnlyField()
-    total = serializers.ReadOnlyField()
+    cart = serializers.PrimaryKeyRelatedField(
+        queryset=Cart.objects.all(),
+        required=True
+    )
+
+    subtotal = serializers.SerializerMethodField()
+    shipping_fee = serializers.SerializerMethodField()
+    protection_fee = serializers.SerializerMethodField()
+    total = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -30,10 +45,25 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Если корзина не передана, а только ID, найдем её
-        cart = validated_data.get("cart")
-        if not cart:
-            raise serializers.ValidationError("Cart must be provided")
+        return super().create(validated_data)
 
-        order = Order.objects.create(cart=cart, **validated_data)
-        return order
+    @staticmethod
+    def _get_integer_field(obj, field_name):
+        value = getattr(obj, field_name, 0)
+        return int(value) if value is not None else 0
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_subtotal(self, obj):
+        return self._get_integer_field(obj, "subtotal")
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_shipping_fee(self, obj):
+        return self._get_integer_field(obj, "shipping_fee")
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_protection_fee(self, obj):
+        return self._get_integer_field(obj, "protection_fee")
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_total(self, obj):
+        return self._get_integer_field(obj, "total")
