@@ -50,8 +50,11 @@ class Product(models.Model):
     brand = models.CharField(
         max_length=255, blank=True, null=True
     )
+    quantity = models.PositiveIntegerField(
+        default=0
+    )
     stock = models.BooleanField(
-        default=True
+        default=False, editable=False
     )
     image = models.ImageField(
         upload_to='products/', blank=True, null=True
@@ -95,6 +98,8 @@ class Product(models.Model):
 
         if not self.upc:
             self.upc = ''.join(random.choices(string.digits, k=12))
+
+        self.stock = self.quantity >= 1  # type: ignore
 
         super().save(*args, **kwargs)
 

@@ -10,11 +10,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(
-        read_only=True
-    )
+    category = CategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(),  # type: ignore[attr-defined]
+        queryset=Category.objects.all(),
         source='category', write_only=True
     )
     price = serializers.IntegerField(
@@ -24,10 +22,16 @@ class ProductSerializer(serializers.ModelSerializer):
         required=False, allow_null=True
     )
     shipping_price = serializers.IntegerField(
-        default=lambda: random.randint(0, 2000)
+        default=lambda: random.randint(0, 2_000)
     )
     image = serializers.ImageField(
         required=False, default='img/Sample.jpg'
+    )
+    quantity = serializers.IntegerField(
+        min_value=0, default=0
+    )
+    stock = serializers.BooleanField(
+        read_only=True
     )
 
     class Meta:
