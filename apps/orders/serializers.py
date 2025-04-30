@@ -17,8 +17,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 
 class OrderCartSerializer(serializers.ModelSerializer):
-    # Пример простого сериализатора для корзины, если необходимо передавать
-    # корзину в заказе. Вы можете расширить его под вашу логику
     class Meta:
         model = Cart
         fields = ["id", "session_key", "created_at", "updated_at"]
@@ -43,9 +41,6 @@ class OrderSerializer(serializers.ModelSerializer):
             "giftcard_code", "discount_code", "is_paid", "items",
             "subtotal", "shipping_fee", "protection_fee", "total"
         ]
-
-    def create(self, validated_data):
-        return super().create(validated_data)
 
     @staticmethod
     def _get_integer_field(obj, field_name):

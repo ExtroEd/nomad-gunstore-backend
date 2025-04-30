@@ -1,13 +1,17 @@
+from django.db import IntegrityError
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
 from .models import Order
 from .serializers import OrderSerializer
-from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(tags=["Order"])
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
+    queryset = Order.objects.all()  #type: ignore
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -27,7 +31,18 @@ class OrderViewSet(viewsets.ModelViewSet):
         responses=OrderSerializer,
     )
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as e:
+            if 'orders_order_cart_id_key' in str(e):
+                return Response(
+                    {"detail": "Эта корзина уже была использована в заказе."},
+                    status=status.HTTP_409_CONFLICT
+                )
+            return Response(
+                {"detail": "Ошибка при создании заказа."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     @extend_schema(
         summary="Получение заказа",

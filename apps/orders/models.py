@@ -18,7 +18,9 @@ class Order(models.Model):
     cart = models.OneToOneField(
         'cart.Cart', on_delete=models.CASCADE, related_name="order"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
     state = models.CharField(max_length=50, choices=[
         ("Batken", "Batken"),
         ("Osh", "Osh"),
@@ -28,10 +30,18 @@ class Order(models.Model):
         ("Issyk-Kul", "Issyk-Kul"),
         ("Chui", "Chui"),
     ])
-    zip_code = models.CharField(max_length=6, validators=[validate_zip])
-    giftcard_code = models.CharField(max_length=50, blank=True, null=True)
-    discount_code = models.CharField(max_length=50, blank=True, null=True)
-    is_paid = models.BooleanField(default=False)
+    zip_code = models.CharField(
+        max_length=6, validators=[validate_zip]
+    )
+    giftcard_code = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    discount_code = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    is_paid = models.BooleanField(
+        default=False
+    )
 
     def __str__(self):
         return f"Order #{self.id}"
@@ -57,8 +67,10 @@ class Order(models.Model):
     @property
     def total(self):
         if self.cart:
-            donate = self.cart.donation_amount if self.cart.donation_enabled else 0
-            return self.subtotal + self.shipping_fee + self.protection_fee + donate
+            donate = self.cart.donation_amount if self.cart.donation_enabled \
+                else 0
+            return (self.subtotal + self.shipping_fee + self.protection_fee +
+                    donate)
         return 0
 
 
