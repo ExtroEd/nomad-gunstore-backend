@@ -1,6 +1,8 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from .models import Cart
 from .serializers import CartSerializer
 
@@ -10,14 +12,35 @@ class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def get_permissions(self):
+        if self.action == 'create':
+            return []  # Гостям разрешаем создание корзины
+        return super().get_permissions()
+
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Cart.objects.filter(user=self.request.user)
-        elif hasattr(self.request,
-                     'session') and self.request.session.session_key:
-            return Cart.objects.filter(
-                session_key=self.request.session.session_key)
-        return Cart.objects.none()
+            return Cart.objects.filter(user=self.request.user)  # type: ignore
+        elif (hasattr(self.request, 'session') and
+              self.request.session.session_key):
+            return Cart.objects.filter(  # type: ignore
+                session_key=self.request.session.session_key
+            )
+        return Cart.objects.none()  # type: ignore
+
+    def get_or_create_cart(self, request):
+        if request.user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(  # type: ignore
+                user=request.user
+            )
+        else:
+            session_key = request.session.session_key
+            if not session_key:
+                request.session.create()
+                session_key = request.session.session_key
+            cart, _ = Cart.objects.get_or_create(  # type: ignore
+                session_key=session_key
+            )
+        return cart
 
     @extend_schema(
         summary="Список корзин",
@@ -25,7 +48,9 @@ class CartViewSet(viewsets.ModelViewSet):
                     "чтения.",
     )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        cart = self.get_or_create_cart(request)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)
 
     @extend_schema(
         summary="Создание корзины",
@@ -35,18 +60,9 @@ class CartViewSet(viewsets.ModelViewSet):
         responses=CartSerializer,
     )
     def create(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            if Cart.objects.filter(user=request.user).exists():
-                return Response({'detail': 'У вас уже есть корзина.'},
-                                status=400)
-        elif (
-                not request.user.is_authenticated and 'session_key' not in
-                request.data):
-            return Response({
-                                'detail': 'Для создания корзины необходимо '
-                                          'указать session_key для гостей.'},
-                            status=400)
-        return super().create(request, *args, **kwargs)
+        cart = self.get_or_create_cart(request)
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data, status=201)
 
     @extend_schema(
         summary="Получение корзины",
@@ -69,8 +85,7 @@ class CartViewSet(viewsets.ModelViewSet):
     @extend_schema(
         summary="Частичное обновление корзины",
         description="Позволяет изменить отдельные поля корзины без "
-                    "необходимости передавать всё. Например, можно обновить "
-                    "только защиту доставки или сумму пожертвования.",
+                    "необходимости передавать всё.",
         request=CartSerializer,
         responses=CartSerializer,
     )
@@ -83,9 +98,26 @@ class CartViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         if not request.user.is_superuser:
-            return Response({
-                                'detail': 'Удаление корзины доступно только '
-                                          'суперпользователям.'},
-                            status=403)
-
+            return Response(
+                {'detail': 'Удаление корзины доступно только '
+                           'суперпользователям.'},
+                status=403
+            )
         return super().destroy(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Текущая корзина",
+        description="Возвращает корзину текущего пользователя или гостя по "
+                    "session_key.",
+        responses={200: CartSerializer}
+    )
+    @action(detail=False, methods=["get"], url_path="my")
+    def my_cart(self, request):
+        queryset = self.get_queryset()
+        cart = queryset.first()
+
+        if not cart:
+            return Response({"detail": "Корзина не найдена."}, status=404)
+
+        serializer = self.get_serializer(cart)
+        return Response(serializer.data)

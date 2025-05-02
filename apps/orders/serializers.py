@@ -36,11 +36,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = [
-            "id", "user", "cart", "created_at", "state", "zip_code",
-            "giftcard_code", "discount_code", "is_paid", "items",
-            "subtotal", "shipping_fee", "protection_fee", "total"
-        ]
+        fields = '__all__'
+        read_only_fields = (
+            'user', 'created_at', 'subtotal', 'shipping_fee', 'protection_fee',
+            'total'
+        )
 
     @staticmethod
     def _get_integer_field(obj, field_name):
