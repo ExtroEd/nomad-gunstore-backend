@@ -5,7 +5,7 @@ from django.db import models
 class Cart(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
-        blank=True
+        blank=True, related_name="carts"
     )
     session_key = models.CharField(
         max_length=40, null=True, blank=True
@@ -58,7 +58,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     cart = models.ForeignKey(
-        Cart, related_name="items", on_delete=models.CASCADE
+        'Cart', related_name="items", on_delete=models.CASCADE
     )
     product = models.ForeignKey(
         "products.Product", on_delete=models.CASCADE
