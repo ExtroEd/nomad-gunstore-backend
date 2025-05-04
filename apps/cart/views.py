@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from .models import Cart, CartItem
@@ -15,39 +16,55 @@ class CartViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         guest_allowed = [
-            'create', 'add_item', 'remove_item', 'clear_cart',
-            'update_item_quantity', 'my_cart'
+            'create', 'add_item', 'remove_item',
+            'clear_cart', 'update_item_quantity', 'my_cart'
         ]
+
+        admin_only = ['list', 'retrieve']
 
         if self.action in guest_allowed:
             return []
-        return super().get_permissions()
+
+        if self.action in admin_only:
+            return [permissions.IsAdminUser()]
+
+        return [
+            permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            return Cart.objects.filter(user=self.request.user).order_by('id')
-        elif hasattr(self.request,
-                     'session') and self.request.session.session_key:
+        user = self.request.user
+
+        if user.is_authenticated and user.is_staff:
+            return Cart.objects.all().order_by('id')
+
+        if user.is_authenticated:
+            return Cart.objects.filter(user=user).order_by('id')
+
+        if hasattr(self.request,
+                   'session') and self.request.session.session_key:
             return Cart.objects.filter(
                 session_key=self.request.session.session_key
             ).order_by('id')
+
         return Cart.objects.none()
 
     def get_or_create_cart(self, request):
-        if request.user.is_authenticated:
-            cart, _ = Cart.objects.get_or_create(user=request.user)
+        user = request.user
+        if user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(user=user)
+        elif hasattr(request, 'session') and request.session.session_key:
+            cart, _ = Cart.objects.get_or_create(
+                session_key=request.session.session_key)
         else:
-            session_key = request.session.session_key
-            if not session_key:
-                request.session.create()
-                session_key = request.session.session_key
-            cart, _ = Cart.objects.get_or_create(session_key=session_key)
+            return None
         return cart
 
     def get_object(self):
-        """Обеспечивает, что пользователь получает только свою корзину"""
         queryset = self.get_queryset()
-        return queryset.get(pk=self.kwargs["pk"])
+        try:
+            return queryset.get(pk=self.kwargs["pk"])
+        except Cart.DoesNotExist:
+            raise NotFound("Корзина не найдена или доступ к ней запрещён.")
 
     @extend_schema(
         summary="Список корзин",
@@ -76,6 +93,20 @@ class CartViewSet(viewsets.ModelViewSet):
         responses=CartSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
+        cart = self.get_object()
+
+        if request.user.is_superuser:
+            return super().retrieve(request, *args, **kwargs)
+
+        if request.user.is_authenticated:
+            if cart.user != request.user:
+                return Response({"detail": "Нет доступа к этой корзине."},
+                                status=403)
+        else:
+            if cart.session_key != request.session.session_key:
+                return Response({"detail": "Нет доступа к этой корзине."},
+                                status=403)
+
         return super().retrieve(request, *args, **kwargs)
 
     @extend_schema(
@@ -100,9 +131,20 @@ class CartViewSet(viewsets.ModelViewSet):
     )
     def destroy(self, request, *args, **kwargs):
         if not request.user.is_superuser:
-            return Response({'detail': 'Удаление корзины доступно только '
-                                       'суперпользователям.'}, status=403)
-        return super().destroy(request, *args, **kwargs)
+            return Response(
+                {
+                    'detail': 'Удаление корзины доступно только '
+                              'суперпользователям.'},
+                status=403
+            )
+
+        try:
+            cart = Cart.objects.get(pk=kwargs['pk'])
+        except Cart.DoesNotExist:
+            return Response({'detail': 'Корзина не найдена.'}, status=404)
+
+        cart.delete()
+        return Response(status=204)
 
     @extend_schema(
         summary="Текущая корзина",
@@ -111,11 +153,17 @@ class CartViewSet(viewsets.ModelViewSet):
     )
     @action(detail=False, methods=["get"], url_path="my")
     def my_cart(self, request):
-        queryset = self.get_queryset()
-        cart = queryset.first()
+        user = request.user
 
-        if not cart:
-            return Response({"detail": "Корзина не найдена."}, status=404)
+        if user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(user=user)
+        elif hasattr(request, 'session') and request.session.session_key:
+            cart, _ = Cart.objects.get_or_create(
+                session_key=request.session.session_key
+            )
+        else:
+            return Response({"detail": "Невозможно определить сессию."},
+                            status=400)
 
         serializer = self.get_serializer(cart)
         return Response(serializer.data)
@@ -136,29 +184,28 @@ class CartViewSet(viewsets.ModelViewSet):
             "detail": {"type": "string"}
         }}},
     )
-    @action(detail=True, methods=["post"], url_path="add-item")
-    def add_item(self, request, pk=None):
-        cart = self.get_object()
+    @action(detail=False, methods=["post"], url_path="add-item")
+    def add_item(self, request):
+        cart = self.get_or_create_cart(request)
+        if not cart:
+            return Response({"detail": "Невозможно определить сессию."},
+                            status=400)
+
         product_id = request.data.get("product")
         quantity = int(request.data.get("quantity", 1))
 
         if not product_id:
-            return Response(
-                {"detail": "Поле 'product' обязательно."}, status=400
-            )
+            return Response({"detail": "Поле 'product' обязательно."},
+                            status=400)
 
         try:
             product = Product.objects.get(pk=product_id)
         except Product.DoesNotExist:
             return Response({"detail": "Товар не найден."}, status=404)
 
-        item, created = CartItem.objects.get_or_create(
-            cart=cart, product=product
-        )
-        if not created:
-            item.quantity += quantity
-        else:
-            item.quantity = quantity
+        item, created = CartItem.objects.get_or_create(cart=cart,
+                                                       product=product)
+        item.quantity = item.quantity + quantity if not created else quantity
         item.save()
 
         return Response({"detail": "Товар добавлен в корзину."})
@@ -176,11 +223,14 @@ class CartViewSet(viewsets.ModelViewSet):
         responses={200: {"type": "object",
                          "properties": {"detail": {"type": "string"}}}},
     )
-    @action(detail=True, methods=["post"], url_path="remove-item")
-    def remove_item(self, request, pk=None):
-        cart = self.get_object()
-        product_id = request.data.get("product")
+    @action(detail=False, methods=["post"], url_path="remove-item")
+    def remove_item(self, request):
+        cart = self.get_or_create_cart(request)
+        if not cart:
+            return Response({"detail": "Невозможно определить сессию."},
+                            status=400)
 
+        product_id = request.data.get("product")
         if not product_id:
             return Response({"detail": "Поле 'product' обязательно."},
                             status=400)
@@ -199,9 +249,13 @@ class CartViewSet(viewsets.ModelViewSet):
         responses={200: {"type": "object",
                          "properties": {"detail": {"type": "string"}}}},
     )
-    @action(detail=True, methods=["post"], url_path="clear")
-    def clear_cart(self, request, pk=None):
-        cart = self.get_object()
+    @action(detail=False, methods=["post"], url_path="clear")
+    def clear_cart(self, request):
+        cart = self.get_or_create_cart(request)
+        if not cart:
+            return Response({"detail": "Невозможно определить сессию."},
+                            status=400)
+
         CartItem.objects.filter(cart=cart).delete()
         return Response({"detail": "Корзина очищена."})
 
@@ -220,9 +274,13 @@ class CartViewSet(viewsets.ModelViewSet):
         responses={200: {"type": "object",
                          "properties": {"detail": {"type": "string"}}}},
     )
-    @action(detail=True, methods=["post"], url_path="update-item")
-    def update_item_quantity(self, request, pk=None):
-        cart = self.get_object()
+    @action(detail=False, methods=["post"], url_path="update-item")
+    def update_item_quantity(self, request):
+        cart = self.get_or_create_cart(request)
+        if not cart:
+            return Response({"detail": "Невозможно определить сессию."},
+                            status=400)
+
         product_id = request.data.get("product")
         quantity = request.data.get("quantity")
 
