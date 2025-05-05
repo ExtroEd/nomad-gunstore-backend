@@ -5,7 +5,9 @@ from drf_spectacular.utils import extend_schema_field
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source="product.name")
+    product_name = serializers.CharField(
+        source="product.name"
+    )
     total_price = serializers.SerializerMethodField()
 
     class Meta:
@@ -23,16 +25,27 @@ class OrderCartSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True, read_only=True)
-    cart = serializers.PrimaryKeyRelatedField(
-        queryset=Cart.objects.all(),
-        required=True
+    items = OrderItemSerializer(
+        many=True, read_only=True
     )
-
-    subtotal = serializers.SerializerMethodField()
-    shipping_fee = serializers.SerializerMethodField()
-    protection_fee = serializers.SerializerMethodField()
-    total = serializers.SerializerMethodField()
+    cart = serializers.PrimaryKeyRelatedField(
+        queryset=Cart.objects.all(), required=True
+    )
+    subtotal = serializers.IntegerField(
+        read_only=True
+    )
+    shipping_fee = serializers.IntegerField(
+        read_only=True
+    )
+    protection_fee = serializers.IntegerField(
+        read_only=True
+    )
+    total = serializers.IntegerField(
+        read_only=True
+    )
+    donation = serializers.IntegerField(
+        default=0, min_value=0, max_value=99999, required=False
+    )
 
     class Meta:
         model = Order
@@ -42,23 +55,31 @@ class OrderSerializer(serializers.ModelSerializer):
             'total'
         )
 
-    @staticmethod
-    def _get_integer_field(obj, field_name):
-        value = getattr(obj, field_name, 0)
-        return int(value) if value is not None else 0
+    def create(self, validated_data):
+        user = self.context["request"].user
+        cart = validated_data["cart"]
 
-    @extend_schema_field(serializers.IntegerField())
-    def get_subtotal(self, obj):
-        return self._get_integer_field(obj, "subtotal")
+        if user.is_authenticated:
+            validated_data["user"] = user
 
-    @extend_schema_field(serializers.IntegerField())
-    def get_shipping_fee(self, obj):
-        return self._get_integer_field(obj, "shipping_fee")
+        donation = validated_data.get("donation", 0)
 
-    @extend_schema_field(serializers.IntegerField())
-    def get_protection_fee(self, obj):
-        return self._get_integer_field(obj, "protection_fee")
+        validated_data["subtotal"] = cart.subtotal_price
+        validated_data["shipping_fee"] = cart.shipping_fee
+        validated_data["protection_fee"] = cart.shipping_protection_fee
+        validated_data["total"] = (
+                cart.subtotal_price + cart.shipping_fee +
+                cart.shipping_protection_fee + donation
+        )
+        validated_data["donation"] = donation
 
-    @extend_schema_field(serializers.IntegerField())
-    def get_total(self, obj):
-        return self._get_integer_field(obj, "total")
+        order = super().create(validated_data)
+
+        for cart_item in cart.items.all():
+            OrderItem.objects.create(
+                order=order,
+                product=cart_item.product,
+                quantity=cart_item.quantity
+            )
+
+        return order

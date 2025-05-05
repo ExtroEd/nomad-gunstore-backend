@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 def validate_zip(value):
@@ -42,36 +43,33 @@ class Order(models.Model):
     is_paid = models.BooleanField(
         default=False
     )
+    donation = models.PositiveIntegerField(
+        default=0, validators=[MinValueValidator(0), MaxValueValidator(99999)]
+    )
+    subtotal = models.PositiveIntegerField(
+        default=0
+    )
+    shipping_fee = models.PositiveIntegerField(
+        default=0
+    )
+    protection_fee = models.PositiveIntegerField(
+        default=0
+    )
+    total = models.PositiveIntegerField(
+        default=0
+    )
 
     def __str__(self):
         return f"Order #{self.id}"
 
-    @property
-    def subtotal(self):
-        if self.cart:
-            return self.cart.subtotal
-        return 0
-
-    @property
-    def shipping_fee(self):
-        if self.cart:
-            return self.cart.shipping_fee
-        return 0
-
-    @property
-    def protection_fee(self):
-        if self.cart:
-            return self.cart.protection_fee
-        return 0
-
-    @property
-    def total(self):
-        if self.cart:
-            donate = self.cart.donation_amount if self.cart.donation_enabled \
-                else 0
-            return (self.subtotal + self.shipping_fee + self.protection_fee +
-                    donate)
-        return 0
+    def save(self, *args, **kwargs):
+        self.subtotal = sum(item.quantity * item.product.price for item in
+                            self.cart.items.all())
+        self.shipping_fee = self.cart.shipping_fee or 0
+        self.protection_fee = self.cart.shipping_protection_fee or 0
+        self.total = (self.subtotal + self.shipping_fee + self.protection_fee +
+                      self.donation)
+        super().save(*args, **kwargs)
 
 
 class OrderItem(models.Model):
@@ -81,7 +79,9 @@ class OrderItem(models.Model):
     product = models.ForeignKey(
         "products.Product", on_delete=models.CASCADE
     )
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.PositiveIntegerField(
+        default=1
+    )
 
     @property
     def total_price(self):

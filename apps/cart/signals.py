@@ -11,7 +11,8 @@ def merge_guest_cart(sender, request, user, **kwargs):
         return
 
     try:
-        guest_cart = Cart.objects.get(session_key=session_key, user__isnull=True)
+        guest_cart = Cart.objects.get(session_key=session_key,
+                                      user__isnull=True)
     except Cart.DoesNotExist:
         return
 

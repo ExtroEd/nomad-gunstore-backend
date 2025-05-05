@@ -19,12 +19,6 @@ class Cart(models.Model):
     shipping_protection = models.BooleanField(
         default=False
     )
-    donation_enabled = models.BooleanField(
-        default=False
-    )
-    donation_amount = models.PositiveIntegerField(
-        default=0
-    )
 
     def __str__(self):
         return f"Cart ({self.user or self.session_key})"
@@ -45,10 +39,6 @@ class Cart(models.Model):
     def shipping_protection_fee(self) -> int:
         return int(self.subtotal_price * 0.03) \
             if self.shipping_protection else 0
-
-    @property
-    def donation_fee(self) -> int:
-        return self.donation_amount if self.donation_enabled else 0
 
     @property
     def final_price(self) -> int:
