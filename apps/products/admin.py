@@ -1,6 +1,6 @@
 from functools import lru_cache
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
@@ -100,6 +100,17 @@ class ProductAdmin(admin.ModelAdmin):
         return format_html(f'<a href="{url}">📜 История</a>')
 
     log_history_link.short_description = "Логи изменений"
+
+    def delete_model(self, request, obj):
+        affected_items = obj.cart_items.count()
+        if affected_items:
+            self.message_user(
+                request,
+                f"Удалено {affected_items} позиций из корзин вместе с "
+                f"продуктом.",
+                level=messages.WARNING
+            )
+        super().delete_model(request, obj)
 
 
 class CategoryAdmin(admin.ModelAdmin):

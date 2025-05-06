@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from .models import Order
 from .permissions import AllowCreateOrReadOnly
 from .serializers import OrderSerializer
-from ..cart.models import Cart
+from ..carts.models import Cart
 
 
 @extend_schema(tags=["Order"])
@@ -36,7 +36,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         self.permission_classes = [AllowAny]
         self.check_permissions(request)
 
-        cart_id = request.data.get("cart")
+        cart_id = request.data.get("carts")
         if not cart_id:
             return Response({"detail": "Cart ID is required."},
                             status=400)
@@ -49,11 +49,11 @@ class OrderViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated:
             if cart.user != request.user:
                 return Response(
-                    {"detail": "This cart does not belong to you."},
+                    {"detail": "This carts does not belong to you."},
                     status=403)
         else:
             if cart.user is not None:
-                return Response({"detail": "Unauthorized cart access."},
+                return Response({"detail": "Unauthorized carts access."},
                                 status=403)
 
         data = request.data.copy()

@@ -35,6 +35,6 @@ class OrderAdmin(admin.ModelAdmin):
             'fields': ('subtotal', 'shipping_fee', 'protection_fee', 'total')
         }),
         ('Cart', {
-            'fields': ('cart',)
+            'fields': ('carts',)
         }),
     )

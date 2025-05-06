@@ -17,7 +17,7 @@ class Order(models.Model):
         blank=True
     )
     cart = models.OneToOneField(
-        'cart.Cart', on_delete=models.CASCADE, related_name="order"
+        'carts.Cart', on_delete=models.CASCADE, related_name="order"
     )
     created_at = models.DateTimeField(
         auto_now_add=True

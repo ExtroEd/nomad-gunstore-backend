@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
-from ..cart.models import Cart
+from ..carts.models import Cart
 from drf_spectacular.utils import extend_schema_field
 
 
@@ -57,7 +57,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        cart = validated_data["cart"]
+        cart = validated_data["carts"]
 
         if user.is_authenticated:
             validated_data["user"] = user

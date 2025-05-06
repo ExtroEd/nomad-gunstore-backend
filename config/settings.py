@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.products',
     'apps.users',
-    'apps.cart',
+    'apps.carts',
     "drf_spectacular",
     "django_filters",
     'django_ckeditor_5',

@@ -1,11 +1,24 @@
-from rest_framework.viewsets import ModelViewSet
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (extend_schema_view, extend_schema,
                                    OpenApiParameter, OpenApiTypes)
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.permissions import (SAFE_METHODS, BasePermission)
+from rest_framework.viewsets import ModelViewSet
+
+from .filters import ProductFilter
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
-from .filters import ProductFilter
+
+
+class IsAdminOrReadOnly(BasePermission):
+    """
+    Разрешает безопасные методы всем (GET, HEAD, OPTIONS),
+    а все остальные — только админам.
+    """
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user and request.user.is_staff
 
 
 @extend_schema_view(
@@ -44,8 +57,9 @@ from .filters import ProductFilter
     ),
 )
 class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all()  # type: ignore[arg-type]
+    queryset = Category.objects.all().order_by('id')  # type: ignore[arg-type]
     serializer_class = CategorySerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @extend_schema_view(
@@ -114,10 +128,11 @@ class CategoryViewSet(ModelViewSet):
     ),
 )
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()  # type: ignore[arg-type]
+    queryset = Product.objects.all().order_by('id')  # type: ignore[arg-type]
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
     ordering = ['price']
+    permission_classes = [IsAdminOrReadOnly]

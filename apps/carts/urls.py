@@ -3,6 +3,6 @@ from .views import CartViewSet
 
 
 router = DefaultRouter()
-router.register(r'cart', CartViewSet, basename='cart')
+router.register(r'carts', CartViewSet, basename='carts')
 
 urlpatterns = router.urls
