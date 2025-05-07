@@ -1,6 +1,7 @@
 from functools import lru_cache
 from django import forms
 from django.contrib import admin, messages
+from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
@@ -50,6 +51,30 @@ class ProductAttributeInline(admin.TabularInline):
     extra = 1
 
 
+class RoundCountFilter(SimpleListFilter):
+    title = 'Количество патронов'
+    parameter_name = 'round_count'
+
+    def lookups(self, request, model_admin):
+        values = (
+            ProductAttribute.objects
+            .filter(key__iexact='round count')
+            .values_list('value', flat=True)
+            .distinct()
+            .order_by('value')
+        )
+        return [(v, f"{v} шт.") for v in values if v.isdigit()]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value and value.isdigit():
+            return queryset.filter(
+                attribute_set__key__iexact='round count',
+                attribute_set__value=value
+            ).distinct()
+        return queryset
+
+
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
     list_display = (
@@ -58,17 +83,21 @@ class ProductAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'id', 'category', 'brand', 'is_clearance', 'is_deal_of_the_day',
-        'stock'
+        'stock', RoundCountFilter
     )
     search_fields = (
         'id', 'name', 'brand', 'sku', 'mpn', 'upc'
     )
-    inlines = [ProductAttributeInline]
-    autocomplete_fields = ['category']
-    readonly_fields = [
-        'id', 'created_at', 'sku', 'mpn', 'upc', 'stock', 'log_history_link'
+    inlines = [
+        ProductAttributeInline
     ]
-
+    autocomplete_fields = [
+        'category'
+    ]
+    readonly_fields = [
+        'id', 'created_at', 'sku', 'mpn', 'upc', 'stock', 'log_history_link',
+        'price_per_round'
+    ]
     fieldsets = (
         ('Общая информация', {
             'fields': (
@@ -84,14 +113,26 @@ class ProductAdmin(admin.ModelAdmin):
         }),
         ('Дополнительно', {
             'fields': (
-                'quantity', 'stock', 'is_clearance', 'is_deal_of_the_day',
-                'created_at'
+                'quantity', 'stock', 'price_per_round', 'is_clearance',
+                'is_deal_of_the_day', 'created_at'
             )
         }),
         ('Атрибуты', {
             'fields': ('attributes',)
         }),
     )
+
+    def get_search_results(self, request, queryset, search_term):
+        """Добавим поиск по ключу и значению атрибутов."""
+        queryset, use_distinct = super().get_search_results(
+            request, queryset, search_term
+        )
+        attr_matches = Product.objects.filter(
+            attribute_set__key__icontains=search_term
+        ) | Product.objects.filter(
+            attribute_set__value__icontains=search_term
+        )
+        return queryset | attr_matches.distinct(), True
 
     def log_history_link(self, obj):
         content_type = get_content_type(obj.__class__)
@@ -111,6 +152,12 @@ class ProductAdmin(admin.ModelAdmin):
                 level=messages.WARNING
             )
         super().delete_model(request, obj)
+
+    def price_per_round(self, obj):
+        price = obj.get_price_per_round()
+        return f"${price:.2f}" if price is not None else "N/A"
+
+    price_per_round.short_description = "Price per Round"
 
 
 class CategoryAdmin(admin.ModelAdmin):

@@ -68,9 +68,6 @@ class Product(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True, editable=False
     )
-    attributes = models.JSONField(
-        default=dict
-    )
     details = CKEditor5Field(
         'Details', config_name='default',
         default="Description is missing"
@@ -106,6 +103,21 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def get_round_count(self):
+        for attr in self.attribute_set.all():
+            if attr.key.lower() == "round count":
+                try:
+                    return int(attr.value)
+                except ValueError:
+                    return None
+        return None
+
+    def get_price_per_round(self):
+        round_count = self.get_round_count()
+        if round_count and round_count > 0:
+            return round(self.price / round_count, 2)
+        return None
+
 
 class ProductAttribute(models.Model):
     product = models.ForeignKey(
@@ -117,6 +129,13 @@ class ProductAttribute(models.Model):
     value = models.CharField(
         max_length=255
     )
+
+    def save(self, *args, **kwargs):
+        if self.key:
+            self.key = self.key.strip().lower()
+        if isinstance(self.value, str):
+            self.value = self.value.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.key}: {self.value}"
