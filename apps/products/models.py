@@ -69,12 +69,18 @@ class Product(models.Model):
         auto_now_add=True, editable=False
     )
     details = CKEditor5Field(
-        'Details', config_name='default',
-        default="Description is missing"
+        'Details',
+        config_name='default',
+        default="",
+        blank=True,
+        null=True
     )
     features = CKEditor5Field(
-        'Features', config_name='default',
-        default="Description is missing"
+        'Features',
+        config_name='default',
+        default="",
+        blank=True,
+        null=True
     )
 
     def save(self, *args, **kwargs):

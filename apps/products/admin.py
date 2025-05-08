@@ -71,7 +71,7 @@ class RoundCountFilter(SimpleListFilter):
             return queryset.filter(
                 attribute_set__key__iexact='round count',
                 attribute_set__value=value
-            ).distinct()
+            )
         return queryset
 
 
@@ -117,22 +117,24 @@ class ProductAdmin(admin.ModelAdmin):
                 'is_deal_of_the_day', 'created_at'
             )
         }),
-        ('Атрибуты', {
-            'fields': ('attributes',)
-        }),
     )
 
     def get_search_results(self, request, queryset, search_term):
-        """Добавим поиск по ключу и значению атрибутов."""
         queryset, use_distinct = super().get_search_results(
             request, queryset, search_term
         )
+
         attr_matches = Product.objects.filter(
             attribute_set__key__icontains=search_term
-        ) | Product.objects.filter(
+        ).values_list('pk', flat=True)
+
+        attr_matches |= Product.objects.filter(
             attribute_set__value__icontains=search_term
-        )
-        return queryset | attr_matches.distinct(), True
+        ).values_list('pk', flat=True)
+
+        all_pks = set(queryset.values_list('pk', flat=True)) | set(
+            attr_matches)
+        return Product.objects.filter(pk__in=all_pks), True
 
     def log_history_link(self, obj):
         content_type = get_content_type(obj.__class__)
