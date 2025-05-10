@@ -205,9 +205,18 @@ class CartViewSet(viewsets.ModelViewSet):
 
         item, created = CartItem.objects.get_or_create(cart=cart,
                                                        product=product)
-        item.quantity = item.quantity + quantity if not created else quantity
-        item.save()
 
+        new_quantity = item.quantity + quantity if not created else quantity
+        if new_quantity > product.quantity:
+            return Response(
+                {
+                    "detail": f"Нельзя добавить {new_quantity} шт. — в "
+                              f"наличии только {product.quantity}."},
+                status=400
+            )
+
+        item.quantity = new_quantity
+        item.save()
         return Response({"detail": "Товар добавлен в корзину."})
 
     @extend_schema(
@@ -295,11 +304,20 @@ class CartViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Товар в корзине не найден."},
                             status=404)
 
-        if int(quantity) <= 0:
+        quantity = int(quantity)
+        if quantity <= 0:
             item.delete()
             return Response(
                 {"detail": "Товар удалён, так как количество стало 0."})
 
-        item.quantity = int(quantity)
+        if quantity > item.product.quantity:
+            return Response(
+                {
+                    "detail": f"Нельзя установить {quantity} шт. — в наличии "
+                              f"только {item.product.quantity}."},
+                status=400
+            )
+
+        item.quantity = quantity
         item.save()
         return Response({"detail": "Количество обновлено."})

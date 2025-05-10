@@ -57,7 +57,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        cart = validated_data["carts"]
+        cart = validated_data["cart"]
 
         if user.is_authenticated:
             validated_data["user"] = user

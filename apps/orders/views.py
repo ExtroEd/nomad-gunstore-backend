@@ -15,6 +15,18 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [AllowCreateOrReadOnly]
 
+    def get_or_create_cart(self, request):
+        if request.user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(user=request.user)
+        else:
+            session_key = request.session.session_key
+            if not session_key:
+                request.session.create()
+                session_key = request.session.session_key
+            cart, _ = Cart.objects.get_or_create(session_key=session_key,
+                                                 user=None)
+        return cart
+
     @extend_schema(
         summary="Список заказов",
         description="Получить список всех заказов. Может быть ограничено "
@@ -29,34 +41,36 @@ class OrderViewSet(viewsets.ModelViewSet):
         summary="Создание заказа",
         description="Создаёт новый заказ для пользователя или гостя, "
                     "привязывая корзину.",
-        request=OrderSerializer,
+        request={
+            "application/json": {
+                "example": {
+                    "state": "Chui",
+                    "zip_code": "720340",
+                    "donation": 0,
+                    "is_paid": True
+                }
+            }
+        },
         responses=OrderSerializer,
     )
     def create(self, request, *args, **kwargs):
         self.permission_classes = [AllowAny]
         self.check_permissions(request)
 
-        cart_id = request.data.get("carts")
-        if not cart_id:
-            return Response({"detail": "Cart ID is required."},
-                            status=400)
-
-        try:
-            cart = Cart.objects.get(id=cart_id)
-        except Cart.DoesNotExist:
-            return Response({"detail": "Cart not found."}, status=404)
+        cart = self.get_or_create_cart(request)
 
         if request.user.is_authenticated:
             if cart.user != request.user:
                 return Response(
-                    {"detail": "This carts does not belong to you."},
+                    {"detail": "This cart does not belong to you."},
                     status=403)
         else:
             if cart.user is not None:
-                return Response({"detail": "Unauthorized carts access."},
+                return Response({"detail": "Unauthorized cart access."},
                                 status=403)
 
         data = request.data.copy()
+        data["cart"] = cart.id
         if request.user.is_authenticated:
             data["user"] = request.user.id
 
