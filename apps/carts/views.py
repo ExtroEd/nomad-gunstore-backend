@@ -203,20 +203,27 @@ class CartViewSet(viewsets.ModelViewSet):
         except Product.DoesNotExist:
             return Response({"detail": "Товар не найден."}, status=404)
 
-        item, created = CartItem.objects.get_or_create(cart=cart,
-                                                       product=product)
+        existing_item = CartItem.objects.filter(cart=cart,
+                                                product=product).first()
+        current_quantity = existing_item.quantity if existing_item else 0
 
-        new_quantity = item.quantity + quantity if not created else quantity
+        new_quantity = current_quantity + quantity
         if new_quantity > product.quantity:
             return Response(
                 {
                     "detail": f"Нельзя добавить {new_quantity} шт. — в "
-                              f"наличии только {product.quantity}."},
+                              f"наличии только {product.quantity}."
+                },
                 status=400
             )
 
-        item.quantity = new_quantity
-        item.save()
+        if existing_item:
+            existing_item.quantity = new_quantity
+            existing_item.save()
+        else:
+            CartItem.objects.create(cart=cart, product=product,
+                                    quantity=quantity)
+
         return Response({"detail": "Товар добавлен в корзину."})
 
     @extend_schema(

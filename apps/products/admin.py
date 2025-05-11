@@ -4,6 +4,7 @@ from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -117,22 +118,19 @@ class ProductAdmin(admin.ModelAdmin):
                 'is_deal_of_the_day', 'created_at'
             )
         }),
-        ('Атрибуты', {
-            'fields': ('attributes',)
-        }),
     )
 
     def get_search_results(self, request, queryset, search_term):
-        """Добавим поиск по ключу и значению атрибутов."""
-        queryset, use_distinct = super().get_search_results(
+        base_queryset, use_distinct = super().get_search_results(
             request, queryset, search_term
         )
-        attr_matches = Product.objects.filter(
-            attribute_set__key__icontains=search_term
-        ) | Product.objects.filter(
-            attribute_set__value__icontains=search_term
-        )
-        return queryset | attr_matches.distinct(), True
+
+        attr_filter = Q(attribute_set__key__icontains=search_term) | Q(
+            attribute_set__value__icontains=search_term)
+        attr_matches = Product.objects.filter(attr_filter)
+
+        combined = base_queryset | attr_matches
+        return combined.distinct(), True
 
     def log_history_link(self, obj):
         content_type = get_content_type(obj.__class__)

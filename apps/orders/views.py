@@ -77,6 +77,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        cart.items.all().delete()
         return Response(serializer.data, status=201)
 
     @extend_schema(
