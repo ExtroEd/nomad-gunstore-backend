@@ -27,7 +27,10 @@ class Product(models.Model):
         max_length=255
     )
     category = models.ForeignKey(
-        'Category', on_delete=models.CASCADE
+        'Category',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
     price = models.IntegerField(
         validators=[MinValueValidator(0)]
