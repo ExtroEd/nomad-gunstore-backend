@@ -6,15 +6,19 @@ import random
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = "__all__"
+        fields = ["id", "name", "parent"]
 
 
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.all(),
-        source='category', write_only=True
+        source='category',
+        write_only=True,
+        required=False,
+        allow_null=True
     )
+
     price = serializers.IntegerField(
         default=lambda: random.randint(100, 1_000_000)
     )
@@ -25,7 +29,8 @@ class ProductSerializer(serializers.ModelSerializer):
         default=lambda: random.randint(0, 2_000)
     )
     image = serializers.ImageField(
-        required=False, default='img/Sample.jpg'
+        required=False, default='img/Sample.jpg', allow_null=True,
+        use_url=True
     )
     quantity = serializers.IntegerField(
         min_value=0, default=0
@@ -36,7 +41,13 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = [
+            "id", "category", "category_id", "price", "discount_price",
+            "shipping_price", "image", "quantity", "stock", "name",
+            "sku", "mpn", "upc", "brand", "is_clearance",
+            "is_deal_of_the_day", "created_at", "details", "features"
+        ]
+        read_only_fields = ["id", "created_at", "stock"]
 
     def validate(self, data):
         price = data.get('price')
@@ -46,3 +57,12 @@ class ProductSerializer(serializers.ModelSerializer):
                 "The discount price cannot be higher than the regular price."
             )
         return data
+
+
+class ProductMainPageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            "id", "name", "image", "price", "discount_price", "category",
+            "shipping_price", "is_deal_of_the_day", "is_clearance", "stock"
+        ]

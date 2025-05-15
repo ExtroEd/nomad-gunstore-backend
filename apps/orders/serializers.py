@@ -57,10 +57,21 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        cart = validated_data["carts"]
+        cart = validated_data["cart"]
 
         if user.is_authenticated:
             validated_data["user"] = user
+
+        errors = []
+        for cart_item in cart.items.select_related('product'):
+            product = cart_item.product
+            if cart_item.quantity > product.stock:
+                errors.append(
+                    f"Товара '{product.name}' недостаточно, осталось "
+                    f"{product.quantity} шт."
+                )
+        if errors:
+            raise serializers.ValidationError({"detail": errors})
 
         donation = validated_data.get("donation", 0)
 
@@ -81,5 +92,9 @@ class OrderSerializer(serializers.ModelSerializer):
                 product=cart_item.product,
                 quantity=cart_item.quantity
             )
+
+            product = cart_item.product
+            product.stock -= cart_item.quantity
+            product.save()
 
         return order

@@ -1,13 +1,23 @@
+import random
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (extend_schema_view, extend_schema,
                                    OpenApiParameter, OpenApiTypes)
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.permissions import (SAFE_METHODS, BasePermission)
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import SAFE_METHODS, BasePermission, AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import ProductFilter
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
+from .models import Category, Product
+from .serializers import (ProductSerializer, CategorySerializer,
+                          ProductMainPageSerializer)
+from django.core.cache import cache
+
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -136,3 +146,47 @@ class ProductViewSet(ModelViewSet):
     ordering_fields = ['price', 'created_at']
     ordering = ['price']
     permission_classes = [IsAdminOrReadOnly]
+
+
+@extend_schema(
+    summary="Главная страница: 12 товаров",
+    description="Товары из разных категорий, в приоритете Daily Deal и "
+                "Clearance.",
+    tags=["Products"]
+)
+class MainPageProductsAPIView(GenericAPIView):
+    serializer_class = ProductMainPageSerializer
+    queryset = Product.objects.none()
+    permission_classes = [AllowAny]
+
+    @method_decorator(cache_page(60 * 60 * 24))
+    def get(self, request):
+        final_products = []
+        used_categories = set()
+        used_product_ids = set()
+
+        def add_unique(products_queryset):
+            nonlocal final_products, used_categories, used_product_ids
+            products = list(products_queryset)
+            random.shuffle(products)
+            for product in products:
+                if product.id in used_product_ids:
+                    continue
+                cat_id = product.category_id
+                if cat_id not in used_categories or len(products) <= 12:
+                    final_products.append(product)
+                    used_product_ids.add(product.id)
+                    used_categories.add(cat_id)
+                if len(final_products) >= 12:
+                    break
+
+        add_unique(Product.objects.filter(is_deal_of_the_day=True, stock=True))
+
+        if len(final_products) < 12:
+            add_unique(Product.objects.filter(is_clearance=True, stock=True))
+
+        if len(final_products) < 12:
+            add_unique(Product.objects.filter(stock=True))
+
+        serializer = self.get_serializer(final_products[:12], many=True)
+        return Response(serializer.data)

@@ -4,6 +4,7 @@ from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.html import format_html
 
@@ -71,7 +72,7 @@ class RoundCountFilter(SimpleListFilter):
             return queryset.filter(
                 attribute_set__key__iexact='round count',
                 attribute_set__value=value
-            )
+            ).distinct()
         return queryset
 
 
@@ -120,21 +121,16 @@ class ProductAdmin(admin.ModelAdmin):
     )
 
     def get_search_results(self, request, queryset, search_term):
-        queryset, use_distinct = super().get_search_results(
+        base_queryset, use_distinct = super().get_search_results(
             request, queryset, search_term
         )
 
-        attr_matches = Product.objects.filter(
-            attribute_set__key__icontains=search_term
-        ).values_list('pk', flat=True)
+        attr_filter = Q(attribute_set__key__icontains=search_term) | Q(
+            attribute_set__value__icontains=search_term)
+        attr_matches = Product.objects.filter(attr_filter)
 
-        attr_matches |= Product.objects.filter(
-            attribute_set__value__icontains=search_term
-        ).values_list('pk', flat=True)
-
-        all_pks = set(queryset.values_list('pk', flat=True)) | set(
-            attr_matches)
-        return Product.objects.filter(pk__in=all_pks), True
+        combined = base_queryset | attr_matches
+        return combined.distinct(), True
 
     def log_history_link(self, obj):
         content_type = get_content_type(obj.__class__)

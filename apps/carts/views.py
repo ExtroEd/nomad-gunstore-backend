@@ -203,10 +203,26 @@ class CartViewSet(viewsets.ModelViewSet):
         except Product.DoesNotExist:
             return Response({"detail": "Товар не найден."}, status=404)
 
-        item, created = CartItem.objects.get_or_create(cart=cart,
-                                                       product=product)
-        item.quantity = item.quantity + quantity if not created else quantity
-        item.save()
+        existing_item = CartItem.objects.filter(cart=cart,
+                                                product=product).first()
+        current_quantity = existing_item.quantity if existing_item else 0
+
+        new_quantity = current_quantity + quantity
+        if new_quantity > product.quantity:
+            return Response(
+                {
+                    "detail": f"Нельзя добавить {new_quantity} шт. — в "
+                              f"наличии только {product.quantity}."
+                },
+                status=400
+            )
+
+        if existing_item:
+            existing_item.quantity = new_quantity
+            existing_item.save()
+        else:
+            CartItem.objects.create(cart=cart, product=product,
+                                    quantity=quantity)
 
         return Response({"detail": "Товар добавлен в корзину."})
 
@@ -295,11 +311,20 @@ class CartViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Товар в корзине не найден."},
                             status=404)
 
-        if int(quantity) <= 0:
+        quantity = int(quantity)
+        if quantity <= 0:
             item.delete()
             return Response(
                 {"detail": "Товар удалён, так как количество стало 0."})
 
-        item.quantity = int(quantity)
+        if quantity > item.product.quantity:
+            return Response(
+                {
+                    "detail": f"Нельзя установить {quantity} шт. — в наличии "
+                              f"только {item.product.quantity}."},
+                status=400
+            )
+
+        item.quantity = quantity
         item.save()
         return Response({"detail": "Количество обновлено."})
