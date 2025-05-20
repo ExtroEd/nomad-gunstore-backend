@@ -28,7 +28,12 @@ urlpatterns = [
     path('api/', include('apps.products.urls')),
     path('api/', include('apps.orders.urls')),
     path('api/', include('apps.carts.urls')),
+    path('api/', include('apps.categories.urls')),
 
     # Frontend routes
     path('', include('apps.frontend.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL,
+                          document_root=settings.STATIC_ROOT)

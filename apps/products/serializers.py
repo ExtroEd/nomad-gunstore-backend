@@ -1,12 +1,9 @@
 from rest_framework import serializers
-from .models import Product, Category
+from .models import Product
+from apps.categories.models import Category
 import random
 
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ["id", "name", "parent"]
+from apps.categories.serializers import CategorySerializer
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -18,16 +15,13 @@ class ProductSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-
     price = serializers.IntegerField(
         default=lambda: random.randint(100, 1_000_000)
     )
     discount_price = serializers.IntegerField(
         required=False, allow_null=True
     )
-    shipping_price = serializers.IntegerField(
-        default=lambda: random.randint(0, 2_000)
-    )
+    has_free_shipping = serializers.SerializerMethodField()
     image = serializers.ImageField(
         required=False, default='img/Sample.jpg', allow_null=True,
         use_url=True
@@ -43,11 +37,14 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             "id", "category", "category_id", "price", "discount_price",
-            "shipping_price", "image", "quantity", "stock", "name",
+            "has_free_shipping", "image", "quantity", "stock", "name",
             "sku", "mpn", "upc", "brand", "is_clearance",
             "is_deal_of_the_day", "created_at", "details", "features"
         ]
         read_only_fields = ["id", "created_at", "stock"]
+
+    def get_has_free_shipping(self, obj) -> bool:
+        return obj.shipping_price == 0
 
     def validate(self, data):
         price = data.get('price')
@@ -58,11 +55,22 @@ class ProductSerializer(serializers.ModelSerializer):
             )
         return data
 
+    def validate_category(self, value):
+        if (value is not None and not Category.objects.filter(id=value.id).
+                exists()):
+            raise serializers.ValidationError("Категория не существует.")
+        return value
 
-class ProductMainPageSerializer(serializers.ModelSerializer):
+
+class ProductCardSerializer(serializers.ModelSerializer):
+    has_free_shipping = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
         fields = [
             "id", "name", "image", "price", "discount_price", "category",
-            "shipping_price", "is_deal_of_the_day", "is_clearance", "stock"
+            "is_deal_of_the_day", "is_clearance", "stock", "has_free_shipping"
         ]
+
+    def get_has_free_shipping(self, obj) -> bool:
+        return obj.shipping_price == 0

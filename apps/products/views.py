@@ -5,6 +5,7 @@ from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (extend_schema_view, extend_schema,
                                    OpenApiParameter, OpenApiTypes)
+from rest_framework import status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import SAFE_METHODS, BasePermission, AllowAny
@@ -13,11 +14,9 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import ProductFilter
-from .models import Category, Product
-from .serializers import (ProductSerializer, CategorySerializer,
-                          ProductMainPageSerializer)
-from django.core.cache import cache
-
+from .models import Product
+from .serializers import ProductSerializer, ProductCardSerializer
+from ..categories.models import Category
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -29,47 +28,6 @@ class IsAdminOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user and request.user.is_staff
-
-
-@extend_schema_view(
-    list=extend_schema(
-        summary="Список категорий",
-        description="Возвращает все доступные категории. Поддерживает "
-                    "вложенные категории.",
-        tags=["Categories"]
-    ),
-    create=extend_schema(
-        summary="Создание категории",
-        description="Создаёт новую категорию. Можно указать родительскую "
-                    "категорию через `parent`.",
-        tags=["Categories"]
-    ),
-    retrieve=extend_schema(
-        summary="Получение категории",
-        description="Возвращает одну категорию по ID.",
-        tags=["Categories"]
-    ),
-    update=extend_schema(
-        summary="Обновление категории",
-        description="Полное обновление категории.",
-        tags=["Categories"]
-    ),
-    partial_update=extend_schema(
-        summary="Частичное обновление категории",
-        description="Обновляет отдельные поля категории.",
-        tags=["Categories"]
-    ),
-    destroy=extend_schema(
-        summary="Удаление категории",
-        description="Удаляет категорию по ID. Подкатегории могут остаться "
-                    "без родителя.",
-        tags=["Categories"]
-    ),
-)
-class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all().order_by('id')  # type: ignore[arg-type]
-    serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
 
 
 @extend_schema_view(
@@ -150,12 +108,12 @@ class ProductViewSet(ModelViewSet):
 
 @extend_schema(
     summary="Главная страница: 12 товаров",
-    description="Товары из разных категорий, в приоритете Daily Deal и "
-                "Clearance.",
-    tags=["Products"]
+    description="Товары из разных категорий, в приоритете Daily Deal и Clearance.",
+    tags=["Products"],
+    responses={200: ProductCardSerializer(many=True)}
 )
 class MainPageProductsAPIView(GenericAPIView):
-    serializer_class = ProductMainPageSerializer
+    serializer_class = ProductCardSerializer
     queryset = Product.objects.none()
     permission_classes = [AllowAny]
 
@@ -180,7 +138,7 @@ class MainPageProductsAPIView(GenericAPIView):
                 if len(final_products) >= 12:
                     break
 
-        add_unique(Product.objects.filter(is_deal_of_the_day=True, stock=True))
+        add_unique(Product.objects.filter(is_deal_of_the_day=True, stock=True)[:50])
 
         if len(final_products) < 12:
             add_unique(Product.objects.filter(is_clearance=True, stock=True))
@@ -190,3 +148,25 @@ class MainPageProductsAPIView(GenericAPIView):
 
         serializer = self.get_serializer(final_products[:12], many=True)
         return Response(serializer.data)
+
+
+@extend_schema(
+    summary="Получить все товары определённой категории",
+    description="Возвращает все товары, относящиеся к данной категории без "
+                "вложенности.",
+    tags=["Products"],
+    responses={200: ProductCardSerializer(many=True)}
+)
+class ProductsOfCategoryAPIView(APIView):
+    permission_classes = []
+
+    def get(self, request, category_id):
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            return Response({"detail": "Категория не найдена"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        products = Product.objects.filter(category=category, stock=True)
+        serializer = ProductCardSerializer(products, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -8,7 +8,9 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Product, Category, ProductAttribute
+from .models import Product, ProductAttribute
+from apps.categories.models import Category
+from apps.categories.admin import CategoryAdmin
 
 
 @lru_cache(maxsize=None)
@@ -103,7 +105,7 @@ class ProductAdmin(admin.ModelAdmin):
         ('Общая информация', {
             'fields': (
                 'id', 'name', 'category', 'brand', 'price', 'discount_price',
-                'image'
+                'image', 'shipping_price'
             )
         }),
         ('Описание', {
@@ -156,21 +158,6 @@ class ProductAdmin(admin.ModelAdmin):
         return f"${price:.2f}" if price is not None else "N/A"
 
     price_per_round.short_description = "Price per Round"
-
-
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'parent')
-    search_fields = ('id', 'name')
-    autocomplete_fields = ['parent']
-    readonly_fields = ['id', 'log_history_link']
-
-    def log_history_link(self, obj):
-        content_type = get_content_type(obj.__class__)
-        url = reverse("admin:admin_logentry_changelist") + \
-              f"?content_type__id__exact={content_type.id}&object_id={obj.id}"
-        return format_html(f'<a href="{url}">📜 История</a>')
-
-    log_history_link.short_description = "Логи изменений"
 
 
 @admin.register(LogEntry)

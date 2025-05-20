@@ -1,22 +1,28 @@
-LABEL authors="ExtroEd"
-
-ENTRYPOINT ["top", "-b"]
-
 # Используем официальный образ Python
-FROM python:3.10
+FROM python:3.12-slim
+
+# Об авторах (опционально)
+LABEL authors="ExtroEd"
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файлы проекта
+# Копируем проект
 COPY . .
 
 # Устанавливаем Poetry
+RUN apt-get update && apt-get install -y curl
 RUN curl -sSL https://install.python-poetry.org | python -
 ENV PATH="/root/.local/bin:$PATH"
 
-# Устанавливаем зависимости через Poetry
+# Устанавливаем зависимости
+RUN poetry config virtualenvs.create false
 RUN poetry install --no-root
 
-# Запускаем сервер
-CMD ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Открываем порт
+EXPOSE 8000
+
+RUN poetry run python manage.py collectstatic --noinput
+
+# Команда запуска (если не используется docker-compose)
+CMD ["poetry", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
