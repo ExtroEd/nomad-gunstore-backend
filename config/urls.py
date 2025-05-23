@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path, include
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -8,6 +9,9 @@ from drf_spectacular.views import (
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+def ping(request):
+    return JsonResponse({"status": "ok"})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,6 +36,7 @@ urlpatterns = [
 
     # Frontend routes
     path('', include('apps.frontend.urls')),
+    path("ping/", ping),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

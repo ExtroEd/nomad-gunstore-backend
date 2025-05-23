@@ -1,5 +1,6 @@
 import random
 
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
@@ -16,7 +17,7 @@ from rest_framework.viewsets import ModelViewSet
 from .filters import ProductFilter
 from .models import Product
 from .serializers import ProductSerializer, ProductCardSerializer
-from ..categories.models import Category
+from apps.categories.models import Category
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -55,7 +56,7 @@ class IsAdminOrReadOnly(BasePermission):
             OpenApiParameter(
                 name='category', type=OpenApiTypes.INT,
                 location=OpenApiParameter.QUERY,  # type: ignore[arg-type]
-                description="ID категории"
+                description="Любой уровень категории (1–4)"
             ),
             OpenApiParameter(
                 name='ordering', type=OpenApiTypes.STR,
@@ -108,20 +109,40 @@ class ProductViewSet(ModelViewSet):
 
 @extend_schema(
     summary="Главная страница: 12 товаров",
-    description="Товары из разных категорий, в приоритете Daily Deal и Clearance.",
+    description="Можно указать категорию любого уровня для фильтрации. "
+                "Показываются товары с приоритетом Daily Deal, затем "
+                "Clearance.",
     tags=["Products"],
+    parameters=[
+        OpenApiParameter(
+            name='category', type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            description="ID любой категории. Включает подкатегории."
+        )
+    ],
     responses={200: ProductCardSerializer(many=True)}
 )
 class MainPageProductsAPIView(GenericAPIView):
     serializer_class = ProductCardSerializer
-    queryset = Product.objects.none()
     permission_classes = [AllowAny]
 
     @method_decorator(cache_page(60 * 60 * 24))
     def get(self, request):
-        final_products = []
-        used_categories = set()
-        used_product_ids = set()
+        category_id = request.query_params.get('category')
+        product_filter = Q(stock=True)
+
+        if category_id:
+            try:
+                category = Category.objects.get(
+                    id=category_id
+                )
+                cat_ids = category.get_descendants(
+                    include_self=True).values_list("id", flat=True
+                                                   )
+                product_filter &= Q(category_id__in=cat_ids)
+            except Category.DoesNotExist:
+                return Response({"detail": "Категория не найдена"},
+                                status=404)
 
         def add_unique(products_queryset):
             nonlocal final_products, used_categories, used_product_ids
@@ -130,21 +151,27 @@ class MainPageProductsAPIView(GenericAPIView):
             for product in products:
                 if product.id in used_product_ids:
                     continue
-                cat_id = product.category_id
-                if cat_id not in used_categories or len(products) <= 12:
+                if (product.category_id not in used_categories or len(products)
+                        <= 12):
                     final_products.append(product)
                     used_product_ids.add(product.id)
-                    used_categories.add(cat_id)
+                    used_categories.add(product.category_id)
                 if len(final_products) >= 12:
                     break
 
-        add_unique(Product.objects.filter(is_deal_of_the_day=True, stock=True)[:50])
+        final_products = []
+        used_categories = set()
+        used_product_ids = set()
 
+        add_unique(Product.objects.filter(product_filter & Q(
+            is_deal_of_the_day=True
+        ))[:50])
         if len(final_products) < 12:
-            add_unique(Product.objects.filter(is_clearance=True, stock=True))
-
+            add_unique(Product.objects.filter(product_filter & Q(
+                is_clearance=True
+            )))
         if len(final_products) < 12:
-            add_unique(Product.objects.filter(stock=True))
+            add_unique(Product.objects.filter(product_filter))
 
         serializer = self.get_serializer(final_products[:12], many=True)
         return Response(serializer.data)
@@ -152,13 +179,12 @@ class MainPageProductsAPIView(GenericAPIView):
 
 @extend_schema(
     summary="Получить все товары определённой категории",
-    description="Возвращает все товары, относящиеся к данной категории без "
-                "вложенности.",
+    description="Возвращает все товары данной категории и её подкатегорий.",
     tags=["Products"],
     responses={200: ProductCardSerializer(many=True)}
 )
 class ProductsOfCategoryAPIView(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def get(self, request, category_id):
         try:
@@ -167,6 +193,13 @@ class ProductsOfCategoryAPIView(APIView):
             return Response({"detail": "Категория не найдена"},
                             status=status.HTTP_404_NOT_FOUND)
 
-        products = Product.objects.filter(category=category, stock=True)
-        serializer = ProductCardSerializer(products, many=True)
+        descendant_ids = category.get_descendants(
+            include_self=True
+        ).values_list("id", flat=True)
+        products = Product.objects.filter(
+            category_id__in=descendant_ids, stock=True
+        )
+        serializer = ProductCardSerializer(
+            products, many=True
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)

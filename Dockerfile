@@ -1,28 +1,27 @@
-# Используем официальный образ Python
 FROM python:3.12-slim
 
-# Об авторах (опционально)
 LABEL authors="ExtroEd"
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем проект
-COPY . .
+RUN apt-get update && apt-get install -y curl \
+    && curl -sSL https://install.python-poetry.org | python - \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Устанавливаем Poetry
-RUN apt-get update && apt-get install -y curl
-RUN curl -sSL https://install.python-poetry.org | python -
 ENV PATH="/root/.local/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 
-# Устанавливаем зависимости
 RUN poetry config virtualenvs.create false
+
+# Копируем только зависимости сначала (для кэширования)
+COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root
 
-# Открываем порт
-EXPOSE 8000
+# Копируем весь остальной проект
+COPY . .
 
-RUN poetry run python manage.py collectstatic --noinput
-
-# Команда запуска (если не используется docker-compose)
-CMD ["poetry", "run", "gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Копируем и настраиваем entrypoint
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]

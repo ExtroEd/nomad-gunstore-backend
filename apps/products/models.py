@@ -1,20 +1,22 @@
-from django.db import models
-from django_ckeditor_5.fields import CKEditor5Field
-from django.utils import timezone
 import random
 import string
+
 from django.core.validators import MinValueValidator
+from django.db import models
+from django.utils import timezone
+from django_ckeditor_5.fields import CKEditor5Field
+
+from apps.categories.models import Category
 
 
 class Product(models.Model):
-    name = models.CharField(
-        max_length=255
-    )
+    name = models.CharField(max_length=255)
     category = models.ForeignKey(
-        'categories.Category',
+        Category,
         on_delete=models.SET_NULL,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name="Категория"
     )
     price = models.IntegerField(
         validators=[MinValueValidator(0)]

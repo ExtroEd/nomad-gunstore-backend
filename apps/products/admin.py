@@ -1,4 +1,5 @@
 from functools import lru_cache
+
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
@@ -9,8 +10,6 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import Product, ProductAttribute
-from apps.categories.models import Category
-from apps.categories.admin import CategoryAdmin
 
 
 @lru_cache(maxsize=None)
@@ -78,6 +77,7 @@ class RoundCountFilter(SimpleListFilter):
         return queryset
 
 
+@admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
     list_display = (
@@ -85,18 +85,14 @@ class ProductAdmin(admin.ModelAdmin):
         'quantity', 'stock', 'is_deal_of_the_day', 'sku', 'mpn', 'upc'
     )
     list_filter = (
-        'id', 'category', 'brand', 'is_clearance', 'is_deal_of_the_day',
+        'category', 'brand', 'is_clearance', 'is_deal_of_the_day',
         'stock', RoundCountFilter
     )
     search_fields = (
-        'id', 'name', 'brand', 'sku', 'mpn', 'upc'
+        'id', 'name', 'brand__name', 'sku', 'mpn', 'upc'
     )
-    inlines = [
-        ProductAttributeInline
-    ]
-    autocomplete_fields = [
-        'category'
-    ]
+    inlines = [ProductAttributeInline]
+    autocomplete_fields = ['category']
     readonly_fields = [
         'id', 'created_at', 'sku', 'mpn', 'upc', 'stock', 'log_history_link',
         'price_per_round'
@@ -121,6 +117,9 @@ class ProductAdmin(admin.ModelAdmin):
             )
         }),
     )
+    list_select_related = ('category', 'brand')
+    ordering = ('-id',)
+    save_on_top = True
 
     def get_search_results(self, request, queryset, search_term):
         base_queryset, use_distinct = super().get_search_results(
@@ -169,7 +168,3 @@ class LogEntryAdmin(admin.ModelAdmin):
     list_filter = ('action_flag', 'content_type', 'user')
     search_fields = ('object_repr', 'change_message')
     date_hierarchy = 'action_time'
-
-
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Product, ProductAdmin)
