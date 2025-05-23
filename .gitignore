@@ -171,5 +171,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# игнорировать загруженные пользователями файлы
+# Django static
 /media/
+/staticfiles/
