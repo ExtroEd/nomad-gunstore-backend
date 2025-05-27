@@ -18,6 +18,8 @@ RUN poetry config virtualenvs.create false
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-root
 
+RUN mkdir -p /app/logs
+
 # Копируем весь остальной проект
 COPY . .
 

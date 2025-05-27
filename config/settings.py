@@ -239,19 +239,54 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
-        'file': {
+        'server_file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'logs/admin_actions.log',
+            'filename': os.path.join(BASE_DIR, 'logs', 'server.log'),
+            'formatter': 'verbose',
+        },
+        'admin_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'admin_actions.log'),
+            'formatter': 'verbose',
+        },
+        'celery_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'celery.log'),
             'formatter': 'verbose',
         },
     },
 
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'server_file'],
             'level': 'INFO',
             'propagate': True,
+        },
+
+        'django.request': {
+            'handlers': ['server_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'django.security': {
+            'handlers': ['server_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+
+        'django.contrib.admin': {
+            'handlers': ['admin_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery': {
+            'handlers': ['celery_file'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }

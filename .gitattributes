@@ -1,0 +1,5 @@
+# Все .sh файлы должны иметь UNIX окончания строк
+*.sh text eol=lf
+
+# Все Python файлы тоже
+*.py text eol=lf

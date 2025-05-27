@@ -6,6 +6,7 @@ docker-compose up --build
 docker-compose up
 
 🧩 Выполнение команды Django (например, миграции):
+docker-compose exec web poetry run python manage.py makemigrations
 docker-compose exec web poetry run python manage.py migrate
 docker-compose exec web poetry run python manage.py createsuperuser
 

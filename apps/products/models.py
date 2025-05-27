@@ -3,10 +3,34 @@ import string
 
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django_ckeditor_5.fields import CKEditor5Field
 
 from apps.categories.models import Category
+
+
+class Brand(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(unique=True)
+    headline = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+    logo = models.ImageField(upload_to='brands/logos/', null=True, blank=True)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Бренд"
+        verbose_name_plural = "Бренды"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("brands:detail", kwargs={"slug": self.slug})
 
 
 class Product(models.Model):
@@ -36,8 +60,9 @@ class Product(models.Model):
     upc = models.CharField(
         max_length=12, unique=True, editable=False, blank=True, null=True
     )
-    brand = models.CharField(
-        max_length=255, blank=True, null=True
+    brand = models.ForeignKey(
+        Brand, on_delete=models.CASCADE, related_name='products', null=True,
+        blank=True
     )
     quantity = models.PositiveIntegerField(
         default=0
