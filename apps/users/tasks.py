@@ -1,12 +1,25 @@
 from celery import shared_task
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.conf import settings
+import os
 
 
 @shared_task
 def send_verification_email(email, code):
     subject = 'Подтверждение Email — Nomad Tactical'
-    message = (
+
+    context = {
+        'email': email,
+        'code': code,
+        'logo_url': os.getenv('LOGO_URL')
+    }
+
+    html_message = render_to_string(
+        'emails/verification_email.html', context
+    )
+
+    plain_message = (
         f"Nomad Tactical\n\n"
         f"Компания Nomad Tactical получила запрос на подтверждение адреса "
         f"электронной почты {email}.\n\n"
@@ -15,13 +28,15 @@ def send_verification_email(email, code):
         f"Срок действия кода истекает через 24 часа.\n\n"
         f"Если вы не запрашивали этот код, просто проигнорируйте это письмо.\n"
     )
-    send_mail(
+
+    msg = EmailMultiAlternatives(
         subject,
-        message,
+        plain_message,
         settings.EMAIL_HOST_USER,
-        [email],
-        fail_silently=False,
+        [email]
     )
+    msg.attach_alternative(html_message, "text/html")
+    msg.send()
 
 
 @shared_task

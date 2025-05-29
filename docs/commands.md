@@ -1,5 +1,5 @@
 📦 Первый запуск или после изменения зависимостей:
-docker compose down
+docker-compose down
 docker-compose up --build
 
 🌀 Запуск без пересборки:

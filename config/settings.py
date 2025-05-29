@@ -159,8 +159,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Redis как брокер для Celery
 CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = env('CELERY_BROKER_URL')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_ALWAYS_EAGER = False  # убедись, что отключено
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERYD_HIJACK_ROOT_LOGGER = False  # устаревшее, но иногда надо
+CELERYD_LOG_COLOR = True
 
 
 REST_FRAMEWORK = {

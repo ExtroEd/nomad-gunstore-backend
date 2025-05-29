@@ -24,6 +24,6 @@ RUN mkdir -p /app/logs
 COPY . .
 
 # Копируем и настраиваем entrypoint
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
+COPY entrypoint.web.sh /app/entrypoint.sh
+COPY entrypoint.celery.sh /app/entrypoint.celery.sh
+RUN chmod +x /app/entrypoint.web.sh /app/entrypoint.celery.sh

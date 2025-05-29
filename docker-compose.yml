@@ -27,6 +27,7 @@ services:
 
   web:
     build: .
+    entrypoint: ["/app/entrypoint.web.sh"]
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
@@ -52,7 +53,7 @@ services:
 
   celery:
     build: .
-    command: poetry run celery -A config worker --loglevel=info
+    entrypoint: [ "/app/entrypoint.celery.sh" ]
     volumes:
       - .:/app
     depends_on:
