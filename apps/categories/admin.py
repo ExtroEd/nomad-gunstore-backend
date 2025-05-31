@@ -15,6 +15,7 @@ def get_content_type(model):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {"slug": ("name",)}
     search_fields = ['id', 'name', 'slug']
     readonly_fields = ['id', 'log_history_link', 'image_preview']
 

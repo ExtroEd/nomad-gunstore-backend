@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 class Category(models.Model):
     name = models.CharField(
-        max_length=255, verbose_name='Название'
+        max_length=255, verbose_name='Name'
     )
     slug = models.SlugField(
         unique=True, blank=True
@@ -18,17 +18,16 @@ class Category(models.Model):
         blank=True,
         related_name='children',
         on_delete=models.CASCADE,
-        verbose_name='Родительская категория'
+        verbose_name='Parent category'
     )
 
     class Meta:
-        verbose_name = 'Категория'
-        verbose_name_plural = 'Категории'
+        verbose_name = 'Category'
+        verbose_name_plural = 'Categories'
         ordering = ['name']
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
+        self.slug = slugify(self.slug or self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):

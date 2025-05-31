@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Product, ProductAttribute
+from .models import Product, ProductAttribute, Brand, ProductImage
 
 
 @lru_cache(maxsize=None)
@@ -77,6 +77,22 @@ class RoundCountFilter(SimpleListFilter):
         return queryset
 
 
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    prepopulated_fields = {"slug": ("name",)}
+    list_display = ("name", "slug", "created_at")
+    search_fields = ("name",)
+
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    max_num = 8
+    fields = ('image', 'alt_text', 'is_main')
+    readonly_fields = ()
+    show_change_link = True
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
@@ -91,7 +107,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = (
         'id', 'name', 'brand__name', 'sku', 'mpn', 'upc'
     )
-    inlines = [ProductAttributeInline]
+    inlines = [ProductAttributeInline, ProductImageInline]
     autocomplete_fields = ['category']
     readonly_fields = [
         'id', 'created_at', 'sku', 'mpn', 'upc', 'stock', 'log_history_link',
@@ -101,7 +117,7 @@ class ProductAdmin(admin.ModelAdmin):
         ('Общая информация', {
             'fields': (
                 'id', 'name', 'category', 'brand', 'price', 'discount_price',
-                'image', 'shipping_price'
+                'shipping_price'
             )
         }),
         ('Описание', {

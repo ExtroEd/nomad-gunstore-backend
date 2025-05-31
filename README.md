@@ -78,3 +78,4 @@ CLOUDINARY_KEY=your_api_key
 CLOUDINARY_SECRET=your_secret
 LOGO_URL=https://res.cloudinary.com/your_cloud/image/upload/vXXX/logo.png
 ```
+</details>

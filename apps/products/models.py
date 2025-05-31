@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django_ckeditor_5.fields import CKEditor5Field
 
 from apps.categories.models import Category
@@ -22,12 +23,16 @@ class Brand(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Бренд"
-        verbose_name_plural = "Бренды"
+        verbose_name = "Brand"
+        verbose_name_plural = "Brands"
         ordering = ['name']
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.slug or self.name)
+        super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("brands:detail", kwargs={"slug": self.slug})
@@ -40,7 +45,7 @@ class Product(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name="Категория"
+        verbose_name="Category"
     )
     price = models.IntegerField(
         validators=[MinValueValidator(0)]
@@ -70,9 +75,6 @@ class Product(models.Model):
     stock = models.BooleanField(
         default=False, editable=False
     )
-    image = models.ImageField(
-        upload_to='products/', blank=True, null=True
-    )
     is_clearance = models.BooleanField(
         default=False
     )
@@ -96,6 +98,10 @@ class Product(models.Model):
         blank=True,
         null=True
     )
+
+    class Meta:
+        verbose_name = 'Product'
+        verbose_name_plural = 'Products'
 
     def save(self, *args, **kwargs):
         if not self.sku:
@@ -137,6 +143,31 @@ class Product(models.Model):
         if round_count and round_count > 0:
             return round(self.price / round_count, 2)
         return None
+
+    def get_main_image(self):
+        return self.images.filter(is_main=True).first() or self.images.first()
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='images'
+    )
+    image = models.ImageField(upload_to='products/images/')
+    alt_text = models.CharField(max_length=255, blank=True)
+    is_main = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Product Image"
+        verbose_name_plural = "Product Images"
+
+    def __str__(self):
+        return f"Image for {self.product.name}"
+
+    def save(self, *args, **kwargs):
+        if self.is_main:
+            ProductImage.objects.filter(product=self.product,
+                                        is_main=True).update(is_main=False)
+        super().save(*args, **kwargs)
 
 
 class ProductAttribute(models.Model):
