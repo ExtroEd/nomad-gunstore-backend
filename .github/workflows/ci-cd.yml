@@ -1,0 +1,40 @@
+name: CI/CD for Django + Poetry + Docker
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🧾 Клонируем репозиторий
+      uses: actions/checkout@v3
+
+    - name: 🐍 Устанавливаем Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12.7'
+
+    - name: 📦 Устанавливаем Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: 📂 Устанавливаем зависимости
+      run: poetry install
+
+    - name: 🧪 Запускаем тесты
+      run: poetry run pytest
+
+    - name: 🐳 Собираем Docker-образ
+      run: docker build -t myapp:latest .
