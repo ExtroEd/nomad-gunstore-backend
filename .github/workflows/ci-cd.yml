@@ -34,7 +34,7 @@ jobs:
       run: poetry install
 
     - name: 🧪 Запускаем тесты
-      run: poetry run pytest
+      run: poetry run pytest tests
 
     - name: 🐳 Собираем Docker-образ
       run: docker build -t myapp:latest .
