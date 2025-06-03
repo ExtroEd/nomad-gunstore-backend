@@ -61,13 +61,22 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductCardSerializer(serializers.ModelSerializer):
     has_free_shipping = serializers.SerializerMethodField()
     category = CategorySerializer(read_only=True)
+    main_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            "id", "name", "image", "price", "discount_price", "category",
+            "id", "name", "main_image", "price", "discount_price", "category",
             "is_deal_of_the_day", "is_clearance", "stock", "has_free_shipping"
         ]
+
+    def get_main_image(self, obj):
+        image = obj.get_main_image()
+        if image and image.image:
+            request = self.context.get('request')
+            return request.build_absolute_uri(image.image.url) if request \
+                else image.image.url
+        return None
 
     def get_has_free_shipping(self, obj) -> bool:
         return getattr(obj, "shipping_price", 0) == 0

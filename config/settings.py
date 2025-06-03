@@ -272,7 +272,7 @@ LOGGING = {
         },
 
         'django.request': {
-            'handlers': ['server_file'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },
