@@ -1,5 +1,8 @@
 #!/bin/sh
 
+echo "Creating database migrations..."
+poetry run python manage.py makemigrations
+
 echo "Applying database migrations..."
 poetry run python manage.py migrate
 

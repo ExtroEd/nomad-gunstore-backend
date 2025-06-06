@@ -1,9 +1,9 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from .models import Product
-import random
 
 from apps.categories.models import Category
 from apps.categories.serializers import CategorySerializer
+from .models import Product, Brand
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -16,18 +16,27 @@ class ProductSerializer(serializers.ModelSerializer):
         allow_null=True
     )
     price = serializers.IntegerField(
-        required=True, min_value=0
+        required=True,
+        min_value=0
     )
     discount_price = serializers.IntegerField(
-        required=False, allow_null=True, min_value=0
+        required=False,
+        allow_null=True,
+        min_value=0
     )
     has_free_shipping = serializers.SerializerMethodField()
     image = serializers.ImageField(
-        required=False, default='img/Sample.jpg',
-        allow_null=True, use_url=True
+        required=False,
+        allow_null=True,
+        use_url=True
     )
-    quantity = serializers.IntegerField(min_value=0, default=0)
-    stock = serializers.BooleanField(read_only=True)
+    quantity = serializers.IntegerField(
+        min_value=0,
+        default=0
+    )
+    stock = serializers.BooleanField(
+        read_only=True
+    )
 
     class Meta:
         model = Product
@@ -52,11 +61,6 @@ class ProductSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def create(self, validated_data):
-        if 'price' not in validated_data:
-            validated_data['price'] = random.randint(100, 1_000_000)
-        return super().create(validated_data)
-
 
 class ProductCardSerializer(serializers.ModelSerializer):
     has_free_shipping = serializers.SerializerMethodField()
@@ -70,8 +74,9 @@ class ProductCardSerializer(serializers.ModelSerializer):
             "is_deal_of_the_day", "is_clearance", "stock", "has_free_shipping"
         ]
 
+    @extend_schema_field(serializers.ImageField())
     def get_main_image(self, obj):
-        image = obj.get_main_image()
+        image = getattr(obj, "get_main_image", lambda: None)()
         if image and image.image:
             request = self.context.get('request')
             return request.build_absolute_uri(image.image.url) if request \
@@ -80,3 +85,9 @@ class ProductCardSerializer(serializers.ModelSerializer):
 
     def get_has_free_shipping(self, obj) -> bool:
         return getattr(obj, "shipping_price", 0) == 0
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ['id', 'name', 'slug', 'logo']

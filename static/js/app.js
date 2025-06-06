@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const noBtn = document.getElementById('no-button');
     const checkbox = document.getElementById('remember-check');
 
-    // Проверка, сохранять ли
     if (sessionStorage.getItem('ageVerified') === 'true') {
       overlay.style.display = 'none';
     }
@@ -17,18 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     noBtn.addEventListener('click', () => {
-      window.location.href = 'https://google.com'; // Куда отправить несовершеннолетних
+      window.location.href = 'https://cbd.minjust.gov.kg/214/edition/10704/ru';
     });
 });
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loginBtn = document.querySelector('.header-button'); // или добавь отдельный id
+    const loginBtn = document.querySelector('.header-button');
     const modal = document.getElementById('login-modal');
     const closeBtn = document.getElementById('close-login-modal');
 
     loginBtn.addEventListener('click', (e) => {
-      e.preventDefault(); // отключает переход
+      e.preventDefault();
       modal.style.display = 'flex';
     });
 

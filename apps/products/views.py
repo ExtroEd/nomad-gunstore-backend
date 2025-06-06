@@ -15,8 +15,9 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import ProductFilter
-from .models import Product
-from .serializers import ProductSerializer, ProductCardSerializer
+from .models import Product, Brand
+from .serializers import ProductSerializer, ProductCardSerializer, \
+    BrandSerializer
 from apps.categories.models import Category
 
 
@@ -123,6 +124,7 @@ class ProductViewSet(ModelViewSet):
     responses={200: ProductCardSerializer(many=True)}
 )
 class MainPageProductsAPIView(GenericAPIView):
+    queryset = Product.objects.none()
     serializer_class = ProductCardSerializer
     permission_classes = [AllowAny]
 
@@ -203,3 +205,10 @@ class ProductsOfCategoryAPIView(APIView):
             products, many=True
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class BrandListAPIView(APIView):
+    def get(self, request):
+        brands = Brand.objects.all()
+        serializer = BrandSerializer(brands, many=True)
+        return Response(serializer.data)

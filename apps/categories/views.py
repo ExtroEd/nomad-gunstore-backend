@@ -1,9 +1,12 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema_view, extend_schema
 
 from apps.categories.models import Category
-from apps.categories.serializers import CategorySerializer
+from apps.categories.serializers import CategorySerializer, \
+    RecursiveCategorySerializer
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -26,24 +29,25 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
 
-    # Дополнительно можно сделать фильтрацию по уровню или по родителю,
-    # чтобы можно было получить, например, только категории 0 уровня
-    # (parent=None)
     def get_queryset(self):
         queryset = super().get_queryset()
         level = self.request.query_params.get('level')
         parent_id = self.request.query_params.get('parent')
         if level is not None:
             level = int(level)
-            # Фильтрация по уровню: уровень 0 — parent = None,
-            # уровень 1 — parent у которого parent=None и т.д.
-            # Реализовать это можно рекурсивно, либо через аннотацию, но проще:
             if level == 0:
                 queryset = queryset.filter(parent__isnull=True)
             else:
-                # Для упрощения можно фильтровать по parent на основе ID,
-                # или добавить поле depth в модель (по желанию).
-                pass  # Можно доработать, если надо
+                pass
         if parent_id is not None:
             queryset = queryset.filter(parent_id=parent_id)
         return queryset
+
+
+class MenuCategoryAPIView(APIView):
+    serializer_class = RecursiveCategorySerializer
+
+    def get(self, request):
+        top_categories = Category.objects.filter(parent=None)
+        serializer = self.serializer_class(top_categories, many=True)
+        return Response(serializer.data)
