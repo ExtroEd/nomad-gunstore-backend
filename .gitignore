@@ -57,7 +57,8 @@ cover/
 
 # Django stuff:
 *.log
-logs/
+logs/*
+!logs/.gitkeep
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -172,5 +173,8 @@ cython_debug/
 .pypirc
 
 # Django static
-/media/
-/staticfiles/
+media/*
+!media/.gitkeep
+
+staticfiles/*
+!staticfiles/.gitkeep

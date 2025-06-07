@@ -43,7 +43,10 @@
 ```bash
 git clone https://github.com/yourname/nomad-gunstore-backend.git
 cd nomad-gunstore-backend
-cp .env.example .env  # add your secrets
+
+Create a `.env` file in the root of your project and paste the variables from the section below ("Environment Variables") into it. 
+Then replace the values with your own (email, password, Cloudinary, etc.).
+
 docker-compose up --build
 ```
 
