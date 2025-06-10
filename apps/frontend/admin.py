@@ -1,21 +1,45 @@
-from django.utils.html import format_html
 from django.contrib import admin
+from .models import SiteSettings, Icon
 
-from apps.frontend.models import SiteSettings
+
+class IconInline(admin.StackedInline):
+    model = Icon
+    extra = 0
+    readonly_fields = ['preview']
+    fields = ['icon_type', 'svg_file', 'svg_code', 'preview']
+
+    def preview(self, obj):
+        return obj.preview()
+
+    preview.short_description = "Предпросмотр"
 
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    readonly_fields = [
-        'preview_icon_login'
-    ]
+    inlines = [IconInline]
+    list_display = ['site_name', 'logo_preview']
+    readonly_fields = ['logo_preview']
     fields = [
-        'site_name', 'logo', 'icon_login', 'icon_help', 'icon_cart',
-        'icon_search'
+        'site_name',
+        ('logo', 'logo_preview'),
     ]
 
-    def preview_icon_login(self, obj):
-        if obj.icon_login:
-            content = obj.icon_login.read().decode()
-            return format_html(content)
-        return "No icon"
+    def logo_preview(self, obj):
+        return obj.logo_preview()
+
+    logo_preview.short_description = "Текущий логотип"
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()
+
+
+@admin.register(Icon)
+class IconAdmin(admin.ModelAdmin):
+    list_display = ['icon_type', 'preview']
+    readonly_fields = ['preview']
+    fields = ['icon_type', 'svg_file', 'svg_code', 'preview']
+
+    def preview(self, obj):
+        return obj.preview()
+
+    preview.short_description = "Предпросмотр"

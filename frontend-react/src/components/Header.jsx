@@ -1,17 +1,55 @@
-import React from "react";
-import logo from ".../public/logo.png";
+import React, { useEffect, useState } from "react";
+import logo from "../assets/images/logo.png";
 import "../assets/styles/styles.css";
+import axios from "axios";
 
 
-const Header = ({ siteSettings }) => {
-  const hasLogo = siteSettings?.logo;
+const Header = () => {
+  const [siteSettings, setSiteSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const getSvg = (name, fallbackPath) => {
-    if (siteSettings?.svgIcons?.[name]) {
-      return <span dangerouslySetInnerHTML={{ __html: siteSettings.svgIcons[name] }} />;
-    }
-    return <img src={fallbackPath} alt={`${name} icon`} />;
-  };
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get(`/api/site-settings/?t=${Date.now()}`);
+        setSiteSettings(response.data);
+      } catch (error) {
+        console.error("Error fetching site settings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
+    const renderIcon = (iconType) => {
+      if (!siteSettings?.icons?.[iconType]) {
+        const fallbackIcons = {
+          search: "/images/search-icon.svg",
+          login: "/images/account-icon.svg",
+          help: "/images/customer-service-icon.svg",
+          cart: "/images/cart-icon.svg"
+        };
+        return <img src={fallbackIcons[iconType]} alt={`${iconType} icon`} />;
+      }
+
+      const svgString = siteSettings.icons[iconType];
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
+      const svgElement = svgDoc.querySelector('svg');
+
+      if (!svgElement) {
+        return <span>Invalid SVG</span>;
+      }
+
+      const svgHTML = new XMLSerializer().serializeToString(svgElement);
+      return <span dangerouslySetInnerHTML={{ __html: svgHTML }} />;
+    };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <header className="header">
@@ -19,7 +57,7 @@ const Header = ({ siteSettings }) => {
         <div className="header-left">
           <a href="/" className="logo-link">
             <img
-              src={hasLogo ? siteSettings.logo : logo}
+              src={siteSettings?.logo || logo}
               alt="Logo"
               className="logo"
             />
@@ -29,11 +67,11 @@ const Header = ({ siteSettings }) => {
             <input
               type="text"
               className="search-input"
-              placeholder="Search Nomad Tactical..."
+              placeholder={`Search ${siteSettings?.site_name || ''}...`}
             />
             <button type="submit" className="search-button">
               <span className="icon-wrapper">
-                {getSvg("icon_search", "frontend-react/src/assets/images/search-icon.svg")}
+                {renderIcon('search')}
               </span>
             </button>
           </form>
@@ -42,21 +80,21 @@ const Header = ({ siteSettings }) => {
         <div className="header-right">
           <button className="header-button">
             <span className="icon-wrapper">
-              {getSvg("icon_login", "frontend-react/src/assets/images/account-icon.svg")}
+              {renderIcon('login')}
             </span>
             <span>Log In</span>
           </button>
 
           <button className="header-button">
             <span className="icon-wrapper">
-              {getSvg("icon_help", "frontend-react/src/assets/images/customer-service-icon.svg")}
+              {renderIcon('help')}
             </span>
             <span>Help Center</span>
           </button>
 
           <button className="header-button">
             <span className="icon-wrapper">
-              {getSvg("icon_cart", "frontend-react/src/assets/images/cart-icon.svg")}
+              {renderIcon('cart')}
             </span>
             <span>View Cart</span>
           </button>

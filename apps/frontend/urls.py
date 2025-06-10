@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import index
+from .views import SiteSettingsAPI
+
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('api/site-settings/', SiteSettingsAPI.as_view(),
+         name='site-settings'),
 ]
