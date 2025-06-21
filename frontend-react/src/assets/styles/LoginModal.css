@@ -1,0 +1,154 @@
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  pointer-events: auto;
+}
+
+.modal-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url("/images/kyrgyzstan-flag.jpg");
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.modal-overlay::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+
+.modal-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  position: relative;
+  background: white;
+  z-index: 2;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.modal-close {
+  position: absolute;
+  top: -40px;
+  right: -50px;
+  background: none;
+  border: none;
+  font-size: 48px;
+  cursor: pointer;
+  color: #e30000;
+}
+
+.modal-logo {
+  width: 90px;
+  margin-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: left;
+  margin-bottom: 20px;
+  padding-left: 5px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: white;
+  color: black;
+}
+
+.modal-login-btn {
+  background-color: #e30000;
+  color: white;
+  padding: 10px 20px;
+  margin: 15px 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.modal-login-btn:hover {
+  background-color: #880000;
+}
+
+.modal-link {
+  color: #e30000;
+  font-size: 14px;
+  display: block;
+  margin-top: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.modal-link.left {
+  text-align: left;
+}
+
+.modal-link.right {
+  text-align: right;
+}
+
+.modal-links-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.modal-background-box {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.recaptcha-box {
+  margin: 10px 0;
+  font-size: 14px;
+  text-align: left;
+}
+
+.required-asterisk {
+  color: var(--brand-red);
+  margin-left: 4px;
+}
+
+.login-modal-footer {
+  width: 100%;
+  background-color: #570c0a;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 3001;
+}

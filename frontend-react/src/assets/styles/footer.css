@@ -1,0 +1,267 @@
+/* === Section 1: Newsletter Block === */
+
+.footer-newsletter {
+  position: relative;
+  height: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 0;
+  background: transparent;
+}
+
+.footer-newsletter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('/images/kyrgyzstan-flag.jpg') center/cover no-repeat;
+  filter: blur(2px);
+  z-index: -1;
+  transform: scale(1.05);
+  pointer-events: none;
+}
+
+.footer-newsletter-overlay {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  z-index: 0;
+}
+
+.newsletter-container {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.newsletter-text h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  text-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.6);
+  margin-bottom: 1.5rem;
+}
+
+.newsletter-text p {
+  font-size: 2.5rem;
+  font-style: italic;
+  color: white;
+  text-align: center;
+  text-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.6);
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+
+.newsletter-form {
+  min-width: 350px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.newsletter-form input {
+  flex: 1;
+  min-width: 250px;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.newsletter-form button {
+  background-color: var(--brand-red);
+  color: white;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* === Section 2: Newsletter Form === */
+
+.footer-content {
+  background-color: #70100f;
+  color: white;
+  width: 100%;
+  padding-bottom: 105px;
+}
+
+.footer-cta {
+  height: 134px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-cta-text {
+  font-size: 20px;
+}
+
+.footer-cta-phone {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: var(--brand-red);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.footer-cta-phone:hover {
+  color: #fff;
+  text-decoration-color: var(--brand-red);
+}
+
+.footer-main {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.footer-badges a.text-white.text-decoration-underline {
+  text-decoration-color: var(--brand-red) !important;
+  text-underline-offset: 3px;
+}
+
+.footer-badges img {
+  display: block;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+.footer-badge-img.badge-img-1 {
+  width: 207px;
+  height: 34px;
+}
+
+.footer-badge-img.badge-img-2 {
+  width: 160px;
+  height: 40px;
+}
+
+.footer-badge-img.badge-img-3 {
+  width: 72px;
+  height: 36px;
+}
+
+.footer-badge-img.badge-img-4 {
+  width: 160px;
+  height: 32px;
+}
+
+.footer-badge-img.badge-img-5 img {
+  width: 207px;
+  height: 57px;
+}
+
+.text-brand-red {
+  color: var(--brand-red);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.footer-links-column {
+  width: 185px;
+  flex: 1;
+}
+
+.footer-links-column ul li {
+  margin-bottom: 6px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--brand-red);
+}
+
+.footer-legal-item {
+  margin-top: 8px;
+}
+
+.footer-privacy-icon {
+  width: 16px;
+  height: auto;
+}
+
+.footer-help-btn {
+  width: 121px;
+  height: 52px;
+  margin-top: 16px;
+}
+
+.btn-brand-red {
+  background-color: var(--brand-red);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  line-height: 1.5;
+}
+
+.btn-brand-red:hover {
+  background-color: #b00000;
+  text-decoration: none;
+}
+
+/* === Section 3: Copyright and Other Footer Stuff === */
+
+.social-btn {
+  width: 84px;
+  height: 82px;
+  background-color: var(--brand-red);
+  border: none;
+  padding: 0;
+}
+
+.social-btn i {
+  font-size: 32px;
+}
+
+.icon-credits {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  padding: 0.5rem 1rem;
+}
+
+.icon-credits a {
+  color: #bbb;
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.icon-credits a:hover {
+  color: var(--brand-red);
+  text-decoration: underline;
+}
+
+.footer-copyright-text {
+  color: #ccc;
+  font-size: 12px;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0;
+}

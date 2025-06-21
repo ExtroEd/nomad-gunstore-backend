@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import SiteSettings
+from .serializers import SiteSettingsSerializer
 
 
 class SiteSettingsAPI(APIView):
@@ -9,12 +10,5 @@ class SiteSettingsAPI(APIView):
         if not settings:
             return Response({})
 
-        data = {
-            'site_name': settings.site_name,
-            'logo': settings.logo.url if settings.logo else None,
-            'icons': {
-                icon.icon_type: icon.get_svg()
-                for icon in settings.icons.all()
-            }
-        }
-        return Response(data)
+        serializer = SiteSettingsSerializer(settings)
+        return Response(serializer.data)

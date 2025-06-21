@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import logo from "../assets/images/logo.png";
+import "../assets/styles/ageverification.css";
 
 
 const AgeVerification = () => {
@@ -7,7 +8,10 @@ const AgeVerification = () => {
   const [remember, setRemember] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem('ageVerified') === 'true') {
+    if (
+      sessionStorage.getItem('ageVerified') === 'true' ||
+      localStorage.getItem('ageVerifiedRemembered') === 'true'
+    ) {
       setShowOverlay(false);
     }
   }, []);
@@ -15,13 +19,16 @@ const AgeVerification = () => {
   const handleYes = () => {
     if (remember) {
       sessionStorage.setItem('ageVerified', 'true');
+      localStorage.setItem('ageVerifiedRemembered', 'true');
+    } else {
+      sessionStorage.setItem('ageVerified', 'true');
     }
     setShowOverlay(false);
   };
 
-    const handleNo = () => {
-      window.open('https://cbd.minjust.gov.kg/214/edition/10704/ru', '_blank');
-    };
+  const handleNo = () => {
+    window.open('https://cbd.minjust.gov.kg/214/edition/10704/ru', '_blank');
+  };
 
   if (!showOverlay) return null;
 

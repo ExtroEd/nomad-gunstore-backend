@@ -19,6 +19,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             'first_name', 'last_name', 'email',
+            'phone_number',
+            'use_phone_for_2fa',
+            'sms_daily_deals',
             'password', 'confirm_password',
             'newsletter_subscription'
         ]
@@ -75,6 +78,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = [
             'id', 'email', 'first_name', 'last_name',
+            'phone_number', 'use_phone_for_2fa', 'sms_daily_deals',
             'is_active', 'is_staff', 'date_joined', 'newsletter_subscription'
         ]
 

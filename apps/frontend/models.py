@@ -77,8 +77,8 @@ class Icon(models.Model):
     def get_svg(self):
         if self.svg_file:
             try:
-                self.svg_file.seek(0)
-                return self.svg_file.read().decode('utf-8')
+                with open(self.svg_file.path, 'r', encoding='utf-8') as f:
+                    return f.read()
             except Exception as e:
                 print(f"Error reading SVG file: {e}")
                 return ""

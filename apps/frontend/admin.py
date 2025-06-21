@@ -6,7 +6,7 @@ class IconInline(admin.StackedInline):
     model = Icon
     extra = 0
     readonly_fields = ['preview']
-    fields = ['icon_type', 'svg_file', 'svg_code', 'preview']
+    fields = ['icon_type', 'svg_file', 'preview']
 
     def preview(self, obj):
         return obj.preview()
