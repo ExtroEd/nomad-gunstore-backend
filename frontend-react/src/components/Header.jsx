@@ -3,6 +3,7 @@ import logo from "../assets/images/logo.png";
 import "../assets/styles/header.css";
 import axios from "axios";
 import LoginModal from "./LoginModal";
+import { Link } from "react-router-dom";
 
 
 const Header = () => {
@@ -60,13 +61,13 @@ const Header = () => {
 
           {/* Логотип слева */}
           <div className="header-logo">
-            <a href="/" className="logo-link">
+            <Link to="/" className="logo-link">
               <img
                 src={siteSettings?.logo || logo}
                 alt="Logo"
                 className="logo"
               />
-            </a>
+            </Link>
           </div>
 
           {/* Центр: строка поиска */}
@@ -74,7 +75,7 @@ const Header = () => {
             <input
               type="text"
               className="search-input"
-              placeholder={`Search ${siteSettings?.site_name || ''}...`}
+              placeholder={`Search Nomad Tactical by Keywords...`}
             />
             <button type="submit" className="search-button">
               <span className="icon-wrapper">{renderIcon('search')}</span>
@@ -83,24 +84,24 @@ const Header = () => {
 
           {/* Кнопки справа */}
           <div className="header-actions">
-            <button className="header-button" onClick={() => setShowLogin(true)}>
+            <button className="header-button login-button" onClick={() => setShowLogin(true)}>
               <span className="icon-wrapper">{renderIcon('login')}</span>
               <span>Log In</span>
             </button>
 
             <div className="divider" />
 
-            <button className="header-button">
+            <Link to="/help-center/terms-conditions" className="header-button link-button">
               <span className="icon-wrapper">{renderIcon('help')}</span>
               <span>Help Center</span>
-            </button>
+            </Link>
 
             <div className="divider" />
 
-            <button className="header-button">
+            <Link to="/checkout/cart" className="header-button link-button">
               <span className="icon-wrapper">{renderIcon('cart')}</span>
               <span>View Cart</span>
-            </button>
+            </Link>
           </div>
         </div>
       </header>

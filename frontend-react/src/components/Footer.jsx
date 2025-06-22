@@ -223,18 +223,38 @@ const Footer = () => {
       <section className="footer-copyright d-flex flex-column w-100" style={{ backgroundColor: "#570c0a" }}>
         <div className="container d-flex justify-content-between align-items-center px-3" style={{ height: "77px" }}>
           <div className="d-flex gap-2">
-            <button className="social-btn d-flex align-items-center justify-content-center">
+            <a
+              href="https://www.facebook.com/PalmettoStateArmory"
+              className="social-btn d-flex align-items-center justify-content-center"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <i className="bi bi-facebook text-white"></i>
-            </button>
-            <button className="social-btn d-flex align-items-center justify-content-center">
+            </a>
+            <a
+              href="https://www.youtube.com/user/PSAGVEGAS"
+              className="social-btn d-flex align-items-center justify-content-center"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <i className="bi bi-youtube text-white"></i>
-            </button>
-            <button className="social-btn d-flex align-items-center justify-content-center">
+            </a>
+            <a
+              href="https://x.com/palmettoarmory"
+              className="social-btn d-flex align-items-center justify-content-center"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <i className="bi bi-twitter-x text-white"></i>
-            </button>
-            <button className="social-btn d-flex align-items-center justify-content-center">
+            </a>
+            <a
+              href="https://www.instagram.com/palmettostatearmoryofficial"
+              className="social-btn d-flex align-items-center justify-content-center"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <i className="bi bi-instagram text-white"></i>
-            </button>
+            </a>
           </div>
 
           <p className="footer-copyright-text">

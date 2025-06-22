@@ -1,6 +1,8 @@
 import React from "react";
 import logo from "../assets/images/logo.png";
 import "../assets/styles/LoginModal.css";
+import { Link } from 'react-router-dom';
+
 
 const LoginModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -37,8 +39,20 @@ const LoginModal = ({ isOpen, onClose }) => {
               <button className="modal-login-btn">Login</button>
 
               <div className="modal-links-row">
-                <a href="#" className="modal-link left">Forgot Password?</a>
-                <a href="/customer/account/create" className="modal-link right">Create Account</a>
+                <Link
+                  to="/customer/account/forgotpassword/"
+                  className="modal-link left"
+                  onClick={onClose}
+                >
+                  Forgot Password?
+                </Link>
+                <Link
+                  to="/customer/account/create"
+                  className="modal-link right"
+                  onClick={onClose}
+                >
+                  Create Account
+                </Link>
               </div>
             </div>
           </div>

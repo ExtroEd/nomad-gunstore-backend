@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import NavBar from "./components/NavBar";
+import ImageGrid from './components/ImageGrid';
 import AgeVerification from "./components/AgeVerification";
 import LoginModal from "./components/LoginModal";
 import RegisterPage from "./components/RegisterPage";
 import './app.css';
-
 
 const ScrollToTopButton = () => {
   const [visible, setVisible] = useState(false);
@@ -35,24 +35,39 @@ const ScrollToTopButton = () => {
   ) : null;
 };
 
-const App = () => {
+const AppContent = () => {
+  const location = useLocation();
+
+  const minimalRoutes = ["/customer/account/create"];
+  const isMinimalPage = minimalRoutes.includes(location.pathname);
+
   return (
-    <Router>
+    <>
       <Header />
       <NavBar />
+
+      {!isMinimalPage && <ImageGrid />}
 
       <main>
         <Routes>
           <Route path="/customer/account/create" element={<RegisterPage />} />
-          {/* сюда добавляй другие страницы */}
+          {/* остальные страницы */}
         </Routes>
       </main>
 
-      <Footer />
+      <Footer isRegisterPage={isMinimalPage} />
 
-      <AgeVerification />
-      <LoginModal />
+      {!isMinimalPage && <AgeVerification />}
+      {!isMinimalPage && <LoginModal />}
       <ScrollToTopButton />
+    </>
+  );
+};
+
+const App = () => {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 };

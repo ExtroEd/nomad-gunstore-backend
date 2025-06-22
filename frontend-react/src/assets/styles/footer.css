@@ -234,6 +234,12 @@
   background-color: var(--brand-red);
   border: none;
   padding: 0;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.social-btn:hover {
+  background-color: #cc0000;
 }
 
 .social-btn i {
