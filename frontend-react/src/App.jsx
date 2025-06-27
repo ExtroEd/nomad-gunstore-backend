@@ -8,7 +8,10 @@ import ImageGrid from './components/ImageGrid';
 import AgeVerification from "./components/AgeVerification";
 import LoginModal from "./components/LoginModal";
 import RegisterPage from "./components/RegisterPage";
+import EmailConfirmPage from "./components/EmailConfirmPage";
+import ScreenShots from "./components/ScreenShots";
 import './app.css';
+
 
 const ScrollToTopButton = () => {
   const [visible, setVisible] = useState(false);
@@ -38,7 +41,11 @@ const ScrollToTopButton = () => {
 const AppContent = () => {
   const location = useLocation();
 
-  const minimalRoutes = ["/customer/account/create"];
+  const minimalRoutes = [
+    "/customer/account/create",
+    "/customer/account/confirm"
+    ];
+
   const isMinimalPage = minimalRoutes.includes(location.pathname);
 
   return (
@@ -47,15 +54,16 @@ const AppContent = () => {
       <NavBar />
 
       {!isMinimalPage && <ImageGrid />}
+      {!isMinimalPage && <ScreenShots />}
 
       <main>
         <Routes>
           <Route path="/customer/account/create" element={<RegisterPage />} />
-          {/* остальные страницы */}
+          <Route path="/customer/account/confirm" element={<EmailConfirmPage />} />
         </Routes>
       </main>
 
-      <Footer isRegisterPage={isMinimalPage} />
+      <Footer isMinimalPage={isMinimalPage} />
 
       {!isMinimalPage && <AgeVerification />}
       {!isMinimalPage && <LoginModal />}

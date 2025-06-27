@@ -4,14 +4,11 @@ import '../assets/styles/footer.css';
 import { useLocation, Link } from "react-router-dom";
 
 
-const Footer = () => {
-  const location = useLocation();
-  const isRegisterPage = location.pathname === "/customer/account/create";
-
+const Footer = ({ isMinimalPage = false }) => {
   return (
     <footer>
       {/* 1. Newsletter Block */}
-      {!isRegisterPage && (
+      {!isMinimalPage && (
         <section className="footer-newsletter">
           <div className="footer-newsletter-overlay" />
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import logo from "../assets/images/logo.png";
 import "../assets/styles/header.css";
 import axios from "axios";
@@ -10,6 +10,9 @@ const Header = () => {
   const [siteSettings, setSiteSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState(null);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const dropdownRef = useRef();
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -25,6 +28,29 @@ const Header = () => {
 
     fetchSettings();
   }, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownVisible(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    setUser(null);
+    setDropdownVisible(false);
+  };
 
   const renderIcon = (iconType) => {
     if (!siteSettings?.icons?.[iconType]) {
@@ -42,35 +68,24 @@ const Header = () => {
     const svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
     const svgElement = svgDoc.querySelector('svg');
 
-    if (!svgElement) {
-      return <span>Invalid SVG</span>;
-    }
+    if (!svgElement) return <span>Invalid SVG</span>;
 
     const svgHTML = new XMLSerializer().serializeToString(svgElement);
     return <span dangerouslySetInnerHTML={{ __html: svgHTML }} />;
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
       <header className="header">
         <div className="header-inner container">
-
-          {/* Логотип слева */}
           <div className="header-logo">
             <Link to="/" className="logo-link">
-              <img
-                src={siteSettings?.logo || logo}
-                alt="Logo"
-                className="logo"
-              />
+              <img src={siteSettings?.logo || logo} alt="Logo" className="logo" />
             </Link>
           </div>
 
-          {/* Центр: строка поиска */}
           <form className="header-search">
             <input
               type="text"
@@ -82,12 +97,41 @@ const Header = () => {
             </button>
           </form>
 
-          {/* Кнопки справа */}
           <div className="header-actions">
-            <button className="header-button login-button" onClick={() => setShowLogin(true)}>
-              <span className="icon-wrapper">{renderIcon('login')}</span>
-              <span>Log In</span>
-            </button>
+            {!user ? (
+              <button className="header-button login-button" onClick={() => setShowLogin(true)}>
+                <span className="icon-wrapper">{renderIcon('login')}</span>
+                <span>Log In</span>
+              </button>
+            ) : (
+              <div className="account-wrapper" ref={dropdownRef}>
+                <button
+                  className="header-button login-button"
+                  onClick={() => setDropdownVisible((prev) => !prev)}
+                >
+                  <span className="icon-wrapper">{renderIcon('login')}</span>
+                  <span>My Account</span>
+                </button>
+                {dropdownVisible && (
+                  <div className="account-dropdown">
+                    <div className="account-welcome">Welcome, {user.first_name}</div>
+                    <div className="dropdown-divider" />
+                    <ul className="dropdown-list">
+                      <li><Link to="/account">My Account</Link></li>
+                      <li><Link to="/address-book">Address Book</Link></li>
+                      <li><Link to="/payments">Saved Payments</Link></li>
+                      <li><Link to="/preferred-ffl">Preferred FFL</Link></li>
+                      <li><Link to="/order-history">Order History</Link></li>
+                      <li><Link to="/wishlists">Wishlists</Link></li>
+                      <li><Link to="/saved-for-later">Saved for Later</Link></li>
+                      <li><Link to="/help-center">Help Center</Link></li>
+                    </ul>
+                    <div className="dropdown-divider" />
+                    <button className="logout-button" onClick={handleLogout}>Log Out</button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="divider" />
 
@@ -106,7 +150,7 @@ const Header = () => {
         </div>
       </header>
 
-      {showLogin && <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />}
+      {showLogin && <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} setUser={setUser} />}
     </>
   );
 };

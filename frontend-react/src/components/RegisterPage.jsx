@@ -1,34 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import '../assets/styles/RegisterPage.css';
+import { useNavigate } from 'react-router-dom';
 import { Helmet } from "react-helmet";
+import { Form, Input, Checkbox, Button, message } from 'antd';
+import InputMask from 'react-input-mask';
+import '../assets/styles/RegisterPage.css';
 
 
 export default function RegisterPage() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    newsletter: true,
-    usePhoneFor2FA: false,
-    smsDailyDeals: false,
-    password: '',
-    confirmPassword: ''
-  });
+  const [form] = Form.useForm();
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  const handleFinish = async (values) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+      const response = await fetch(`${API_URL}/api/auth/register/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          first_name: values.firstName,
+          last_name: values.lastName,
+          email: values.email,
+          phone_number: values.phone,
+          use_phone_for_2fa: values.usePhoneFor2FA || false,
+          sms_daily_deals: values.smsDailyDeals || false,
+          newsletter_subscription: values.newsletter ?? true,
+          password: values.password,
+          confirm_password: values.confirmPassword,
+        })
+      });
+
+      if (response.status === 201) {
+        message.success("Account created! Please check your email for verification.");
+        form.resetFields();
+        navigate("/customer/account/confirm", {
+          state: { email: values.email },
+        });
+      } else {
+        const data = await response.json();
+        const firstError = Object.values(data)?.[0]?.[0] || "Registration failed.";
+        message.error(firstError);
+        console.error("Backend error:", data);
+      }
+    } catch (error) {
+      message.error("Server error. Please try again later.");
+      console.error("Request error:", error);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Регистрация:', formData);
-    // Добавь отправку на backend
-  };
+  const phonePrefix = '+996';
 
   return (
     <>
@@ -42,55 +65,135 @@ export default function RegisterPage() {
             Create an account to track orders and access special promotions.
           </p>
 
-          <form onSubmit={handleSubmit} className="register-form">
+          <Form
+            form={form}
+            onFinish={handleFinish}
+            layout="vertical"
+            className="register-form"
+          >
             <h3 className="register-section-title">Personal Information</h3>
 
-            <label>First Name <span className="required">*</span></label>
-            <input name="firstName" type="text" value={formData.firstName} onChange={handleChange} required />
+            <Form.Item
+              label="First Name"
+              name="firstName"
+              rules={[{ required: true, message: 'This is a required field.' },
+              { pattern: /^[A-Za-z ]+$/, message: 'Please use only letters (a-z or A-Z) or spaces only in this field.' }]}
+            >
+              <Input placeholder="Eren" />
+            </Form.Item>
 
-            <label>Last Name <span className="required">*</span></label>
-            <input name="lastName" type="text" value={formData.lastName} onChange={handleChange} required />
+            <Form.Item
+              label="Last Name"
+              name="lastName"
+              rules={[{ required: true, message: 'This is a required field.' },
+              { pattern: /^[A-Za-z ]+$/, message: 'Please use only letters (a-z or A-Z) or spaces only in this field.' }]}
+            >
+              <Input placeholder="Yeger" />
+            </Form.Item>
 
-            <label>Phone</label>
-            <input name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="(996) 000-000" />
+            <Form.Item
+              label="Phone"
+              name="phone"
+              rules={[{
+                required: false
+              }, {
+                pattern: /^\d{3}\s\d{3}\s\d{3}$/, message: 'Please enter a valid phone number. For example 700 123 456.'
+              }]}
+            >
+              <Input
+                addonBefore={phonePrefix}
+                placeholder="700 123 456"
+                maxLength={11}
+              />
+            </Form.Item>
 
-            <div className="checkbox-group">
-              <label>
-                <input type="checkbox" name="usePhoneFor2FA" checked={formData.usePhoneFor2FA} onChange={handleChange} />
+            <Form.Item name="usePhoneFor2FA" valuePropName="checked">
+              <Checkbox>
                 Use this phone number for two factor authentication via SMS
-              </label>
+              </Checkbox>
+            </Form.Item>
 
-              <label>
-                <input type="checkbox" name="smsDailyDeals" checked={formData.smsDailyDeals} onChange={handleChange} />
+            <Form.Item name="smsDailyDeals" valuePropName="checked">
+              <Checkbox>
                 Please send me Daily Deal Notifications at this phone number.
                 Message frequency varies. Message and data rates may apply. Reply HELP for HELP or STOP to cancel.
-              </label>
+              </Checkbox>
+            </Form.Item>
 
-              <p className="sms-terms-link">
-                <a href="/help-center/terms-conditions.html#sms-marketing" target="_blank" rel="noopener noreferrer">SMS Terms of Service</a> &nbsp;&&nbsp;
-                <a href="/opt-out" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-              </p>
-            </div>
+            <p className="sms-terms-link">
+              <a href="/help-center/terms-conditions.html#sms-marketing" target="_blank" rel="noopener noreferrer">SMS Terms of Service</a> &nbsp;&&nbsp;
+              <a href="/opt-out" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            </p>
 
             <h3 className="register-section-title">Sign-in Information</h3>
 
-            <label>Email <span className="required">*</span></label>
-            <input name="email" type="email" value={formData.email} onChange={handleChange} required />
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: true, message: 'This is a required field.' },
+              { type: 'email', message: 'Please enter a valid email address (Ex: erenyeger@domain.com).' }]}
+            >
+              <Input placeholder="you@example.com" />
+            </Form.Item>
 
-            <label>
-              <input type="checkbox" name="newsletter" checked={formData.newsletter} onChange={handleChange} />
-              Sign Up for Newsletter
-            </label>
+            <Form.Item name="newsletter" valuePropName="checked" initialValue={true}>
+              <Checkbox>Sign Up for Newsletter</Checkbox>
+            </Form.Item>
 
-            <label>Password <span className="required">*</span></label>
-            <input name="password" type="password" value={formData.password} onChange={handleChange} required />
-            <p className="password-strength">Password Strength: No Password</p>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: 'This is a required field.' },
+              {
+                validator: (_, value) => {
+                  if (!value || value.trim().length < 8) {
+                    return Promise.reject('Minimum length of this field must be equal or greater than 8 symbols. Leading and trailing spaces will be ignored.');
+                  }
+                  const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/];
+                  const passed = classes.filter(rx => rx.test(value)).length;
+                  if (passed < 3) {
+                    return Promise.reject('Minimum of different classes of characters in password is 3. Classes of characters: Lower Case, Upper Case, Digits, Special Characters.');
+                  }
+                  return Promise.resolve();
+                }
+              }]}
+            >
+              <Input.Password visibilityToggle placeholder="Password" />
+            </Form.Item>
 
-            <label>Confirm <span className="required">*</span></label>
-            <input name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required />
+            <Form.Item
+              label="Confirm Password"
+              name="confirmPassword"
+              dependencies={["password"]}
+              rules={[
+                { required: true, message: 'This is a required field.' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('password') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject('Passwords do not match.');
+                  }
+                })
+              ]}
+            >
+              <Input.Password visibilityToggle placeholder="Confirm Password" />
+            </Form.Item>
 
-            <button type="submit" className="register-submit-btn">Submit</button>
-          </form>
+            <Form.Item
+              name="notRobot"
+              valuePropName="checked"
+              rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('Please confirm you are not a robot.') }]}
+            >
+              <Checkbox>I am not a robot</Checkbox>
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="register-submit-btn">
+                Submit
+              </Button>
+            </Form.Item>
+          </Form>
         </div>
       </div>
     </>

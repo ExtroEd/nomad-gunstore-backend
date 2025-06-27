@@ -3,7 +3,7 @@ from typing import List
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.categories.models import Category
+from apps.categories.models import Category, CustomMenuItem
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -33,3 +33,11 @@ class RecursiveCategorySerializer(serializers.ModelSerializer):
                 context=self.context
             ).data
         return []
+
+
+class CustomMenuItemSerializer(serializers.ModelSerializer):
+    categories = CategorySerializer(many=True)
+
+    class Meta:
+        model = CustomMenuItem
+        fields = ["name", "categories"]

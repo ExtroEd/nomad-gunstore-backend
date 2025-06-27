@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.utils.html import format_html
 
-from apps.categories.models import Category
+from apps.categories.models import Category, CustomMenuItem
 
 
 @lru_cache(maxsize=None)
@@ -41,3 +41,19 @@ class CategoryAdmin(admin.ModelAdmin):
         )
         return format_html('<a href="{}">📜 История</a>', url)
     log_history_link.short_description = "Логи изменений"
+
+
+@admin.register(CustomMenuItem)
+class CustomMenuItemAdmin(admin.ModelAdmin):
+    list_display = ['name', 'get_categories']
+    search_fields = ['name']
+    filter_horizontal = ['categories']
+
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name == "categories":
+            kwargs["queryset"] = Category.objects.filter(parent__isnull=True)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def get_categories(self, obj):
+        return ", ".join([cat.name for cat in obj.categories.all()])
+    get_categories.short_description = "Категории"

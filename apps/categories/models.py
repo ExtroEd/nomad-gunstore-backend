@@ -40,3 +40,21 @@ class Category(models.Model):
             ancestors.append(current.name)
             current = current.parent
         return " > ".join(reversed(ancestors))
+
+
+class CustomMenuItem(models.Model):
+    MENU_CHOICES = [
+        ("shop_all", "Shop All"),
+        ("guns", "Guns"),
+        ("ar_15", "AR-15"),
+        ("ar_10", "AR-10"),
+        ("ak_47", "AK-47"),
+        ("ammo", "Ammo"),
+        ("suppressors", "Suppressors"),
+        ("brands", "Brands"),
+    ]
+    name = models.CharField(max_length=50, choices=MENU_CHOICES, unique=True)
+    categories = models.ManyToManyField("Category", related_name="custom_menus")
+
+    def __str__(self):
+        return self.get_name_display()

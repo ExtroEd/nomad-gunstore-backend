@@ -7,7 +7,7 @@
 
 .top-row {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* 734px и 367px по пропорции */
+  grid-template-columns: 2fr 1fr;
   gap: 9px;
   width: 100%;
 }

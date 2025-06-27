@@ -1,12 +1,13 @@
+from rest_framework import generics
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from drf_spectacular.utils import extend_schema_view, extend_schema
 
-from apps.categories.models import Category
+from apps.categories.models import Category, CustomMenuItem
 from apps.categories.serializers import CategorySerializer, \
-    RecursiveCategorySerializer
+    RecursiveCategorySerializer, CustomMenuItemSerializer
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -51,3 +52,8 @@ class MenuCategoryAPIView(APIView):
         top_categories = Category.objects.filter(parent=None)
         serializer = self.serializer_class(top_categories, many=True)
         return Response(serializer.data)
+
+
+class CustomMenuItemListView(generics.ListAPIView):
+    queryset = CustomMenuItem.objects.prefetch_related("categories__children__children")
+    serializer_class = CustomMenuItemSerializer

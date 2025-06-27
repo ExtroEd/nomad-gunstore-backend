@@ -85,3 +85,8 @@ label.required::after {
   border-radius: 5px;
   cursor: pointer;
 }
+
+.show-password-toggle {
+  margin: 5px 0 15px;
+  font-size: 14px;
+}

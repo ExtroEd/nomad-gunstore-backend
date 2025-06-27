@@ -4,128 +4,86 @@ import "../assets/styles/navbar.css";
 
 
 const NavBar = () => {
-  const [categories, setCategories] = useState([]);
-  const [brands, setBrands] = useState([]);
-  const [activeContent, setActiveContent] = useState(null);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [activeContentType, setActiveContentType] = useState(null);
   const [activeItemName, setActiveItemName] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const catRes = await fetch("/api/menu-categories/");
-      const catData = await catRes.json();
-      setCategories(catData);
-
-      const brandRes = await fetch("/api/brands/");
-      const brandData = await brandRes.json();
-      setBrands(brandData);
-    };
-
-    fetchData();
-  }, []);
 
   const menuItems = [
     { name: "Shop All", type: "shop_all" },
-    ...categories.map(cat => ({ ...cat, type: "category" })),
+    { name: "Guns", type: "guns" },
+    { name: "PSA", type: "psa" },
+    { name: "AR-15", type: "ar_15" },
+    { name: "AR-10", type: "ar_10" },
+    { name: "AK-47", type: "ak_47" },
+    { name: "Ammo", type: "ammo" },
+    { name: "Suppressors", type: "suppressors" },
     { name: "Brands", type: "brands" },
     { name: "Daily Deals", type: "daily_deals", highlight: true },
   ];
 
+  const imageMap = {
+    shop_all: "/images/screenshots/img_6.png",
+    guns: "/images/screenshots/img_7.png",
+    psa: "/images/screenshots/img_8.png",
+    ar_15: "/images/screenshots/img_9.png",
+    ar_10: "/images/screenshots/img_10.png",
+    ak_47: "/images/screenshots/img_11.png",
+    ammo: "/images/screenshots/img_12.png",
+    suppressors: "/images/screenshots/img_13.png",
+    brands: "/images/screenshots/img_14.png",
+  };
+
   const handleMouseEnter = (item) => {
     setDropdownVisible(true);
-    setActiveContentType(item.type);
     setActiveItemName(item.name);
-
-    if (item.type === "shop_all") {
-      setActiveContent(buildCategoriesDropdown(categories));
-    } else if (item.type === "category") {
-      setActiveContent(buildSubcategoriesDropdown(item));
-    } else if (item.type === "brands") {
-      setActiveContent(buildBrandsDropdown(brands));
-    } else {
-      setDropdownVisible(false);
-    }
   };
 
   const handleMouseLeave = () => {
     setDropdownVisible(false);
-    setActiveContent(null);
-    setActiveContentType(null);
     setActiveItemName(null);
   };
 
   return (
-    <nav className="nav-bar">
-      <ul className="nav-categories" onMouseLeave={handleMouseLeave}>
-        {menuItems.map((item, index) => (
-          <li
-            key={index}
-            className={item.highlight ? "daily-deals" : ""}
-            onMouseEnter={() => handleMouseEnter(item)}
-          >
-            {item.name}
+    <>
+      <nav className="nav-bar">
+        <ul className="nav-categories" onMouseLeave={handleMouseLeave}>
+          {menuItems.map((item, index) => (
+            <li
+              key={index}
+              className={item.highlight ? "daily-deals" : ""}
+              onMouseEnter={() => handleMouseEnter(item)}
+            >
+              {item.name}
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-            {isDropdownVisible && activeItemName === item.name && (
-              <div className="category-dropdown active">
-                {activeContent}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    </nav>
+      {isDropdownVisible && activeItemName && (
+        <div
+          className="container"
+          style={{
+            marginTop: "10px",
+            marginBottom: "20px",
+          }}
+        >
+          <img
+            src={imageMap[
+              menuItems.find((m) => m.name === activeItemName)?.type
+            ]}
+            alt={activeItemName}
+            style={{
+              width: "100% !important",
+              height: "auto !important",
+              display: "block",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+              objectFit: "cover",
+            }}
+          />
+        </div>
+      )}
+    </>
   );
 };
-
-// --- Sub-render functions ---
-const buildCategoriesDropdown = (categories) => (
-  <ul>
-    {categories.map(cat => (
-      <li key={cat.id}>{cat.name}</li>
-    ))}
-  </ul>
-);
-
-const buildSubcategoriesDropdown = (category) => (
-  <div>
-    <h3>{category.name}</h3>
-    {category.children && category.children.length > 0 ? (
-      <ul>
-        {category.children.map(sub => (
-          <li key={sub.id}>
-            <strong>{sub.name}</strong>
-            {sub.children && sub.children.length > 0 && (
-              <ul>
-                {sub.children.map(subsub => (
-                  <li key={subsub.id}>{subsub.name}</li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p>No subcategories</p>
-    )}
-  </div>
-);
-
-const buildBrandsDropdown = (brands) => (
-  <>
-    <div className="brands-top">
-      {brands.map(brand => (
-        <div key={brand.id} className="brand-logo">
-          <img src={brand.logo} alt={brand.name} />
-        </div>
-      ))}
-    </div>
-    <ul className="brands-list">
-      {brands.map(brand => (
-        <li key={brand.id}>{brand.name}</li>
-      ))}
-    </ul>
-  </>
-);
 
 export default NavBar;
